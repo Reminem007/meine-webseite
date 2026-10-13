@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Meine Daten</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --good: #0ca30c; --warning: #fab219; --critical: #d03b3b; --good-text: #006300;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --good-text: #0ca30c;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --good-text: #0ca30c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding: 16px 16px 64px; }
+h1 { font-size: 22px; margin: 0; }
+h2 { font-size: 17px; margin: 40px 0 12px; }
+h3 { font-size: 14px; margin: 0 0 8px; color: var(--ink-2); font-weight: 600; }
+.sub { color: var(--muted); font-size: 13px; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 8px 0 4px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+button, select, input { font: inherit; color: var(--ink); }
+.seg button { border: 1px solid var(--ring); background: var(--surface); padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
+.ghost { border: 1px solid var(--ring); background: transparent; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tile, .card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 14px 16px; }
+.tile .label { color: var(--ink-2); font-size: 13px; }
+.tile .value { font-size: 26px; font-weight: 650; margin-top: 2px; }
+.tile .note { color: var(--muted); font-size: 12px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
+.chartbox { position: relative; height: 220px; }
+.wide { grid-column: 1 / -1; }
+td:first-child { white-space: nowrap; }
+@media (max-width: 520px) { .tiles { grid-template-columns: 1fr 1fr; } .tile .value { font-size: 22px; } }
+.svgchart { width: 100%; height: 100%; position: relative; }
+.svgchart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.svgchart .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.svgchart .gl { stroke: var(--grid); stroke-width: 1; }
+.svgchart .base { stroke: var(--axis); stroke-width: 1; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--page); font-size: 12px;
+  padding: 4px 8px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -120%); z-index: 2; }
+.cross { stroke: var(--axis); stroke-width: 1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+th { text-align: left; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--grid); padding: 6px 8px; }
+td { border-bottom: 1px solid var(--grid); padding: 6px 8px; vertical-align: top; }
+.tablewrap { overflow-x: auto; margin-top: 12px; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.status .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.ok .dot { background: var(--good); } .ok { color: var(--good-text); }
+.warn .dot { background: var(--warning); }
+.bad .dot { background: var(--critical); }
+.empty { color: var(--muted); font-size: 13px; padding: 24px 0; text-align: center; }
+#lock { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+#lock form { background: var(--surface); border: 1px solid var(--ring); border-radius: 16px; padding: 28px; width: 100%; max-width: 360px; }
+#lock input[type=password] { width: 100%; padding: 10px 12px; border: 1px solid var(--axis); border-radius: 8px; background: var(--page); margin: 12px 0; }
+#lock .primary { width: 100%; padding: 10px; border: 0; border-radius: 8px; background: var(--ink); color: var(--page); font-weight: 600; cursor: pointer; }
+#lock .err { color: var(--critical); font-size: 13px; min-height: 18px; margin-top: 8px; }
+label.check { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); margin-bottom: 14px; }
+select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--axis); background: var(--surface); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <form id="lockform" autocomplete="on">
+    <h1>Meine Daten</h1>
+    <div class="sub">Die Daten sind verschlüsselt. Zum Anzeigen Passwort eingeben.</div>
+    <input type="text" name="username" value="dashboard" autocomplete="username" hidden>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Passwort" required>
+    <label class="check"><input id="remember" type="checkbox" checked> Auf diesem Gerät merken</label>
+    <button class="primary" type="submit" id="unlockbtn">Öffnen</button>
+    <div class="err" id="err" role="alert"></div>
+  </form>
+</div>
+
+<main id="app" hidden>
+  <header>
+    <div>
+      <h1>Meine Daten</h1>
+      <div class="sub" id="updated"></div>
+    </div>
+    <div class="filters">
+      <div class="seg" id="range" role="group" aria-label="Zeitraum">
+        <button data-days="30">30 Tage</button>
+        <button data-days="90" aria-pressed="true">90 Tage</button>
+        <button data-days="365">1 Jahr</button>
+        <button data-days="0">Alles</button>
+      </div>
+      <button class="ghost" id="logout">Sperren</button>
+    </div>
+  </header>
+
+  <h2>Synchronisation</h2>
+  <div class="tiles" id="syncTiles"></div>
+  <div class="card tablewrap"><table id="runsTable"></table></div>
+
+  <h2>Krafttraining (Speediance)</h2>
+  <div class="tiles" id="trainTiles"></div>
+  <div class="grid2">
+    <div class="card"><h3>Volumen pro Woche (kg)</h3><div class="chartbox"><div id="cVol" class="svgchart"></div></div></div>
+    <div class="card"><h3>Ø Leistung pro Training (W)</h3><div class="chartbox"><div id="cWatt" class="svgchart"></div></div></div>
+    <div class="card">
+      <div class="row"><h3>Höchstes Gewicht pro Training (kg)</h3><select id="exSel" aria-label="Übung"></select></div>
+      <div class="chartbox"><div id="cEx" class="svgchart"></div></div>
+    </div>
+    <div class="card wide"><h3>Letzte Trainings</h3><div class="tablewrap" style="margin:0"><table id="trainTable"></table></div></div>
+  </div>
+
+  <h2>Gesundheit (Garmin)</h2>
+  <div class="tiles" id="healthTiles"></div>
+  <div class="grid2">
+    <div class="card"><h3>Schlaf (Stunden)</h3><div class="chartbox"><div id="cSleep" class="svgchart"></div></div></div>
+    <div class="card"><h3>Ruhepuls (bpm)</h3><div class="chartbox"><div id="cRhr" class="svgchart"></div></div></div>
+    <div class="card"><h3>HRV, Nacht-Ø (ms)</h3><div class="chartbox"><div id="cHrv" class="svgchart"></div></div></div>
+    <div class="card"><h3>Schritte</h3><div class="chartbox"><div id="cSteps" class="svgchart"></div></div></div>
+    <div class="card"><h3>Body Battery (Tageshoch)</h3><div class="chartbox"><div id="cBb" class="svgchart"></div></div></div>
+    <div class="card wide"><h3>Letzte Aktivitäten</h3><div class="tablewrap" style="margin:0"><table id="actTable"></table></div></div>
+  </div>
+
+  <h2>Arbeitszeit (Clockify)</h2>
+  <div class="tiles" id="workTiles"></div>
+  <div class="grid2">
+    <div class="card"><h3>Stunden pro Woche</h3><div class="chartbox"><div id="cWork" class="svgchart"></div></div></div>
+    <div class="card"><h3>Stunden nach Projekt</h3><div class="chartbox"><div id="cProj" class="svgchart"></div></div></div>
+  </div>
+</main>
+
+<script>
+"use strict";
+const KEY_STORE = "dash_key_v1";
+let DATA = null, RANGE = 90;
+const $ = (id) => document.getElementById(id);
+const b64 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const store = {
+  get() { try { return localStorage.getItem(KEY_STORE); } catch (e) { return null; } },
+  set(v) { try { localStorage.setItem(KEY_STORE, v); } catch (e) {} },
+  del() { try { localStorage.removeItem(KEY_STORE); } catch (e) {} },
+};
+
+async function fetchEnc() {
+  const r = await fetch("data.enc.json?" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error("Daten nicht gefunden (" + r.status + ")");
+  return r.json();
+}
+async function deriveKey(pw, enc) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(enc.salt), iterations: enc.iter, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, true, ["decrypt"]);
+}
+async function decrypt(key, enc) {
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(enc.iv) }, key, b64(enc.ct));
+  const stream = new Blob([plain]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return JSON.parse(await new Response(stream).text());
+}
+
+async function unlockWithStoredKey() {
+  const raw = store.get();
+  if (!raw) return false;
+  try {
+    const enc = await fetchEnc();
+    const key = await crypto.subtle.importKey("raw", b64(raw), "AES-GCM", false, ["decrypt"]);
+    DATA = await decrypt(key, enc);
+    show();
+    return true;
+  } catch (e) { store.del(); return false; }
+}
+
+$("lockform").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  $("err").textContent = ""; $("unlockbtn").disabled = true; $("unlockbtn").textContent = "Entschlüssle …";
+  try {
+    const enc = await fetchEnc();
+    const key = await deriveKey($("pw").value, enc);
+    DATA = await decrypt(key, enc);
+    if ($("remember").checked) {
+      const rawKey = new Uint8Array(await crypto.subtle.exportKey("raw", key));
+      store.set(btoa(String.fromCharCode(...rawKey)));
+    }
+    show();
+  } catch (e) {
+    $("err").textContent = e.name === "OperationError" ? "Passwort falsch." : (e.message || "Fehler beim Laden.");
+  } finally { $("unlockbtn").disabled = false; $("unlockbtn").textContent = "Öffnen"; }
+});
+$("logout").addEventListener("click", () => { store.del(); location.reload(); });
+$("range").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  for (const x of $("range").querySelectorAll("button")) x.setAttribute("aria-pressed", x === b ? "true" : "false");
+  RANGE = +b.dataset.days; render();
+});
+
+// ---------- Hilfen
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (n, d = 0) => n == null || isNaN(n) ? "–" : n.toLocaleString("de-CH", { maximumFractionDigits: d, minimumFractionDigits: d });
+const avg = (a) => { const v = a.filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
+const sum = (a) => a.reduce((s, x) => s + (x || 0), 0);
+const fromDate = () => { if (!RANGE) return "0000"; const d = new Date(); d.setDate(d.getDate() - RANGE); return d.toISOString().slice(0, 10); };
+const inRange = (arr) => arr.filter(x => x.d >= fromDate());
+const dd = (iso) => iso ? iso.slice(8, 10) + "." + iso.slice(5, 7) + "." + iso.slice(2, 4) : "–";
+function weekStart(iso) { const d = new Date(iso + "T12:00:00"); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.toISOString().slice(0, 10); }
+function byWeek(rows, val) { const m = new Map(); for (const r of rows) { const w = weekStart(r.d); m.set(w, (m.get(w) || 0) + (val(r) || 0)); } return [...m.entries()].sort(); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function tile(label, value, note = "") { return `<div class="tile"><div class="label">${esc(label)}</div><div class="value">${value}</div><div class="note">${esc(note)}</div></div>`; }
+function ago(iso) {
+  const min = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (min < 60) return `vor ${min} Min.`; if (min < 48 * 60) return `vor ${Math.round(min / 60)} Std.`; return `vor ${Math.round(min / 1440)} Tagen`;
+}
+
+// Kleine SVG-Diagramme (keine fremden Skripte: entschlüsselte Daten verlassen die Seite nie)
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+function chart(id, type, labels, values, opts = {}) {
+  const box = $(id); box.innerHTML = "";
+  const pts = values.map((v, i) => ({ v, l: labels[i] })).filter(p => p.v != null && !isNaN(p.v));
+  if (!pts.length) { box.innerHTML = '<div class="empty">Keine Daten im Zeitraum.</div>'; return; }
+  const W = box.clientWidth || 320, H = box.clientHeight || 220;
+  const color = css(opts.color || "--s1");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (t, a, parent) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); (parent || svg).appendChild(e); return e; };
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); box.appendChild(svg);
+  const unit = opts.unit || "", dec = opts.dec || 0;
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; box.appendChild(tip);
+  const showTip = (x, y, p) => { tip.hidden = false; tip.style.left = x + "px"; tip.style.top = y + "px"; tip.textContent = `${p.l}: ${fmt(p.v, dec)} ${unit}`; };
+  svg.addEventListener("mouseleave", () => { tip.hidden = true; });
+
+  if (opts.horizontal) {
+    const L = Math.min(150, W * 0.38), R = 40, rowH = Math.min(28, (H - 8) / pts.length);
+    const max = Math.max(...pts.map(p => p.v));
+    pts.forEach((p, i) => {
+      const y = 4 + i * rowH, w = Math.max(2, (W - L - R) * p.v / max);
+      el("text", { x: L - 8, y: y + rowH / 2 + 4, "text-anchor": "end", class: "tick" }).textContent = p.l.length > 22 ? p.l.slice(0, 21) + "…" : p.l;
+      const r = el("rect", { x: L, y: y + 3, width: w, height: rowH - 6, rx: 4, fill: color });
+      el("text", { x: L + w + 6, y: y + rowH / 2 + 4, class: "tick" }).textContent = fmt(p.v, dec);
+      r.addEventListener("mousemove", () => showTip(L + w / 2, y + 3, p));
+    });
+    return;
+  }
+  const L = 40, R = 8, T = 10, B = 24;
+  const vals = pts.map(p => p.v);
+  let lo = opts.zero === false ? Math.min(...vals) : 0, hi = Math.max(...vals);
+  if (opts.zero === false) { const pad = (hi - lo) * 0.15 || 1; lo = Math.max(0, lo - pad); hi = hi + pad; }
+  const top = opts.zero === false ? hi : niceMax(hi);
+  const yS = v => T + (H - T - B) * (1 - (v - lo) / (top - lo || 1));
+  const n = pts.length, step = (W - L - R) / n, xS = i => L + step * (i + 0.5);
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + (top - lo) * k / 4, y = yS(v);
+    el("line", { x1: L, x2: W - R, y1: y, y2: y, class: k ? "gl" : "base" });
+    el("text", { x: L - 6, y: y + 4, "text-anchor": "end", class: "tick" }).textContent = fmt(v, top - lo < 10 ? 1 : 0);
+  }
+  const every = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - L) / 72))));
+  pts.forEach((p, i) => { if (i % every === 0) el("text", { x: xS(i), y: H - 6, "text-anchor": "middle", class: "tick" }).textContent = p.l; });
+  if (type === "bar") {
+    const bw = Math.max(1, step - 2);
+    pts.forEach((p, i) => {
+      const y = yS(p.v), h = Math.max(1, yS(lo) - y);
+      el("path", { d: `M${xS(i) - bw / 2},${y + h} V${y + Math.min(4, h)} q0,-${Math.min(4, h)} ${Math.min(4, bw / 2)},-${Math.min(4, h)} H${xS(i) + bw / 2 - Math.min(4, bw / 2)} q${Math.min(4, bw / 2)},0 ${Math.min(4, bw / 2)},${Math.min(4, h)} V${y + h} Z`, fill: color });
+    });
+  } else {
+    el("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${xS(i)},${yS(p.v)}`).join(""), fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" });
+    if (n <= 40) pts.forEach((p, i) => el("circle", { cx: xS(i), cy: yS(p.v), r: 4, fill: color, stroke: css("--surface"), "stroke-width": 2 }));
+  }
+  const cross = el("line", { y1: T, y2: H - B, class: "cross", visibility: "hidden" });
+  const hit = el("rect", { x: L, y: 0, width: W - L - R, height: H - B, fill: "transparent" });
+  hit.addEventListener("mousemove", (ev) => {
+    const r = svg.getBoundingClientRect(); const x = (ev.clientX - r.left) * W / r.width;
+    const i = Math.max(0, Math.min(n - 1, Math.floor((x - L) / step)));
+    cross.setAttribute("x1", xS(i)); cross.setAttribute("x2", xS(i)); cross.setAttribute("visibility", "visible");
+    showTip(xS(i) * r.width / W, yS(pts[i].v) * r.height / H, pts[i]);
+  });
+  hit.addEventListener("mouseleave", () => cross.setAttribute("visibility", "hidden"));
+}
+let resizeT; addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => DATA && render(), 150); });
+
+// ---------- Darstellung
+function show() { $("lock").hidden = true; $("app").hidden = false; render(); }
+
+function render() {
+  const D = DATA;
+  $("updated").textContent = "Stand: " + new Date(D.updated).toLocaleString("de-CH", { dateStyle: "medium", timeStyle: "short" });
+
+  // Synchronisation
+  const runs = (D.runs || []).slice().reverse();
+  const last = runs[0];
+  const lastOk = runs.find(r => r.ok);
+  let statusHtml = "–";
+  if (last) {
+    const stale = (Date.now() - new Date(last.start)) / 3600000 > 26;
+    const cls = !last.ok ? "bad" : stale ? "warn" : "ok";
+    const txt = !last.ok ? "Fehler" : stale ? "Länger kein Lauf" : "OK";
+    statusHtml = `<span class="status ${cls}"><span class="dot" aria-hidden="true"></span>${txt}</span>`;
+  }
+  $("syncTiles").innerHTML =
+    tile("Letzter Lauf", last ? ago(last.start) : "–", last ? new Date(last.start).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }) : "noch keine Läufe") +
+    tile("Status", statusHtml, lastOk && last && !last.ok ? "Letzter fehlerfreier Lauf " + ago(lastOk.start) : "") +
+    tile("Trainings gesichert", fmt((D.training || []).length), "Speediance, gesamt") +
+    tile("Garmin-Sicherung", D.status.garminBackupUntil ? "ab " + dd(D.status.garminBackupUntil) : "–",
+      D.status.garminBackupFirst && D.status.garminBackupUntil > D.status.garminBackupFirst ? "Vergangenheit wird nachgeholt" : "vollständig") +
+    tile("Clockify-Export", D.status.clockifyLast ? dd(D.status.clockifyLast) : "–", "letzter Export");
+  const rows = runs.slice(0, 15).map(r => {
+    const s = r.speediance || {}, g = r.garmin || {}, c = r.clockify;
+    const st = r.ok ? `<span class="status ok"><span class="dot"></span>OK</span>` : `<span class="status bad"><span class="dot"></span>Fehler</span>`;
+    const msg = (r.meldungen || []).map(esc).join("<br>");
+    return `<tr><td>${new Date(r.start).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" })}</td>
+      <td>${fmt(r.dauer_s / 60, 1)} Min.</td>
+      <td>${s.neu != null ? `${s.hochgeladen || 0} hochgeladen` + (s.fehler ? `, ${s.fehler} Fehler` : "") : "–"}</td>
+      <td>${g.gebremst ? "gebremst" : g.tage != null ? `${g.tage} Tage, ${g.aktivitaeten} Akt.` : "–"}</td>
+      <td>${c ? (c.ok ? "OK" : "Fehler") : "–"}</td><td>${st}${msg ? `<div class="sub">${msg}</div>` : ""}</td></tr>`;
+  }).join("");
+  $("runsTable").innerHTML = `<thead><tr><th>Zeitpunkt</th><th>Dauer</th><th>Speediance → Garmin</th><th>Garmin-Sicherung</th><th>Clockify</th><th>Status</th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="empty">Noch keine Läufe protokolliert.</td></tr>`}</tbody>`;
+
+  // Krafttraining
+  const tr = inRange(D.training || []);
+  $("trainTiles").innerHTML =
+    tile("Trainings", fmt(tr.length), RANGE ? `letzte ${RANGE} Tage` : "gesamt") +
+    tile("Volumen", fmt(sum(tr.map(t => t.vol)) / 1000, 1) + " t", "bewegtes Gewicht") +
+    tile("Ø Leistung", fmt(avg(tr.map(t => t.w))) + " W", "pro Training") +
+    tile("Bestleistungen", fmt(sum(tr.map(t => t.pr))), "PRs laut Speediance");
+  const wv = byWeek(tr, t => t.vol);
+  chart("cVol", "bar", wv.map(([w]) => dd(w)), wv.map(([, v]) => v), { unit: "kg" });
+  const tw = tr.filter(t => t.w);
+  chart("cWatt", "line", tw.map(t => dd(t.d)), tw.map(t => t.w), { unit: "W", color: "--s2", zero: false });
+  const sel = $("exSel"); const names = Object.keys(D.exercises || {});
+  if (!sel.options.length) { sel.innerHTML = names.map(n => `<option>${esc(n)}</option>`).join(""); sel.onchange = render; }
+  const ex = inRange((D.exercises[sel.value] || []).map(([d, w]) => ({ d, w })));
+  chart("cEx", "line", ex.map(e => dd(e.d)), ex.map(e => e.w), { unit: "kg", color: "--s3", zero: false, dec: 1 });
+  $("trainTable").innerHTML = `<thead><tr><th>Datum</th><th>Training</th><th>Min.</th><th>Volumen</th><th>Ø W</th></tr></thead><tbody>` +
+    (tr.slice().reverse().slice(0, 8).map(t => `<tr><td>${dd(t.d)}</td><td>${esc(t.title)}</td><td>${fmt(t.min)}</td><td>${fmt(t.vol)} kg</td><td>${fmt(t.w)}</td></tr>`).join("")
+      || `<tr><td colspan="5" class="empty">Keine Trainings im Zeitraum.</td></tr>`) + "</tbody>";
+
+  // Gesundheit
+  const h = inRange(D.health || []);
+  $("healthTiles").innerHTML =
+    tile("Ø Schlaf", fmt(avg(h.map(x => x.sleepH)), 1) + " h", "Ø Schlafscore " + fmt(avg(h.map(x => x.sleepScore)))) +
+    tile("Ø Ruhepuls", fmt(avg(h.map(x => x.rhr))) + " bpm") +
+    tile("Ø HRV", fmt(avg(h.map(x => x.hrv))) + " ms", "Nacht-Durchschnitt") +
+    tile("Ø Schritte", fmt(avg(h.map(x => x.steps))), "pro Tag");
+  const lab = h.map(x => dd(x.d));
+  chart("cSleep", "bar", lab, h.map(x => x.sleepH), { unit: "h", dec: 1 });
+  chart("cRhr", "line", lab, h.map(x => x.rhr), { unit: "bpm", color: "--s2", zero: false });
+  chart("cHrv", "line", lab, h.map(x => x.hrv), { unit: "ms", color: "--s3", zero: false });
+  chart("cSteps", "bar", lab, h.map(x => x.steps), { unit: "Schritte" });
+  chart("cBb", "line", lab, h.map(x => x.bbHi), { unit: "", color: "--s4" });
+  const acts = inRange(D.activities || []).slice().reverse().slice(0, 8);
+  $("actTable").innerHTML = `<thead><tr><th>Datum</th><th>Aktivität</th><th>km</th><th>Min.</th></tr></thead><tbody>` +
+    (acts.map(a => `<tr><td>${dd(a.d)}</td><td>${esc(a.name || a.type)}</td><td>${a.km ? fmt(a.km, 1) : "–"}</td><td>${fmt(a.min)}</td></tr>`).join("")
+      || `<tr><td colspan="4" class="empty">Keine Aktivitäten im Zeitraum.</td></tr>`) + "</tbody>";
+
+  // Arbeitszeit
+  const wk = inRange(D.work || []);
+  const weeks = byWeek(wk, x => x.h);
+  $("workTiles").innerHTML =
+    tile("Stunden", fmt(sum(wk.map(x => x.h)), 1), RANGE ? `letzte ${RANGE} Tage` : "gesamt") +
+    tile("Ø pro Woche", fmt(avg(weeks.map(([, v]) => v)), 1) + " h");
+  chart("cWork", "bar", weeks.map(([w]) => dd(w)), weeks.map(([, v]) => v), { unit: "h", dec: 1 });
+  const proj = new Map(); for (const x of wk) proj.set(x.p, (proj.get(x.p) || 0) + x.h);
+  const pr = [...proj.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  chart("cProj", "bar", pr.map(([p]) => p), pr.map(([, v]) => v), { unit: "h", dec: 1, horizontal: true });
+}
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => DATA && render());
+unlockWithStoredKey();
+</script>
+</body>
+</html>
