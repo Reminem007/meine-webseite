@@ -141,6 +141,12 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .tile .label { color: var(--ink-2); font-size: 13px; }
 .tile .value { font-size: 24px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .tile .note { color: var(--muted); font-size: 12px; }
+.alert { display: flex; gap: 10px; align-items: center; border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; font-size: 14px;
+  background: color-mix(in srgb, var(--warning) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent); }
+.alert.bad { background: color-mix(in srgb, var(--critical) 12%, var(--surface)); border-color: color-mix(in srgb, var(--critical) 45%, transparent); }
+.alert .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warning); flex: none; }
+.alert.bad .dot { background: var(--critical); }
+.alert button { margin-left: auto; border: 0; background: transparent; text-decoration: underline; color: inherit; font-size: 13px; }
 .empty { color: var(--muted); font-size: 13px; padding: 24px 0; text-align: center; }
 .section-note { color: var(--muted); font-size: 12px; margin: -6px 0 12px; }
 
@@ -283,6 +289,7 @@ nav.bottom { display: none; }
       </div>
     </div>
 
+    <div id="alerts"></div>
     <section data-tab="ov"></section>
     <section data-tab="kraft" hidden></section>
     <section data-tab="health" hidden></section>
@@ -847,6 +854,7 @@ function render() {
   SCOPE = { ov: [...(D.health || []), ...(D.training || [])], kraft: D.training, health: D.health, work: D.work, sync: null }[TAB] || null;
   if (SCOPE && !SCOPE.length) SCOPE = null;
   const [name2, dates2] = rangeLabel(); $("rangeName").textContent = name2; $("rangeDates").textContent = dates2;
+  renderAlerts();
   ({ ov: renderOverview, kraft: renderKraft, health: renderHealth, work: renderWork, sync: renderSync })[TAB]();
 }
 const sec = (k) => document.querySelector(`section[data-tab="${k}"]`);
@@ -1140,6 +1148,25 @@ function renderWork() {
   chart("cProj", { type: "hbar", labels: pr.map(([p]) => p), dec: 1, series: [{ v: pr.map(([, v]) => v), color: "--work" }] });
 }
 
+function tokenDays() {
+  const e = DATA.status && DATA.status.tokenExpires; if (!e) return null;
+  const t = new Date(e.replace(" UTC", "Z").replace(" ", "T"));
+  return isNaN(t) ? null : Math.floor((t - Date.now()) / 864e5);
+}
+function renderAlerts() {
+  const out = [], runs = DATA.runs || [], last = runs[runs.length - 1];
+  if (last && !last.ok) {
+    const real = (last.meldungen || []).filter(m => !m.includes("bremst"));
+    if (real.length) out.push(["bad", `Letzter Abgleich mit Fehler: ${esc(real[0])}`]);
+  }
+  if (last && (Date.now() - new Date(last.start)) / 36e5 > 26) out.push(["", `Seit ${ago(last.start).replace("vor ", "")} kein Abgleich mehr. Läuft der Laptop?`]);
+  const td = tokenDays();
+  if (td != null && td <= 14) out.push([td <= 3 ? "bad" : "", td < 0 ? "GitHub-Token ist abgelaufen – das Dashboard wird nicht mehr aktualisiert. Neues Token erstellen, dann Dashboard_einrichten.bat."
+    : `GitHub-Token läuft in ${td} Tag${td === 1 ? "" : "en"} ab. Neues Token erstellen, dann Dashboard_einrichten.bat.`]);
+  $("alerts").innerHTML = out.map(([c, t]) => `<div class="alert ${c}"><span class="dot"></span><span>${t}</span>${TAB !== "sync" ? '<button data-go="sync">Details</button>' : ""}</div>`).join("");
+}
+$("alerts").addEventListener("click", (ev) => { const b = ev.target.closest("[data-go]"); if (!b) return; TAB = b.dataset.go; history.replaceState(null, "", "#" + TAB); render(); });
+
 // ---------------------------------------------------------------- Synchronisation
 function renderSync() {
   const D = DATA, S = sec("sync");
@@ -1167,6 +1194,10 @@ function renderSync() {
       ${tile("Trainings gesichert", fmt((D.training || []).length), "Speediance, gesamt")}
       ${tile("Garmin-Sicherung", D.status.garminBackupUntil ? "ab " + dd(D.status.garminBackupUntil) : "–", D.status.garminComplete ? "vollständig" : "Vergangenheit wird nachgeholt")}
       ${tile("Clockify-Export", D.status.clockifyLast ? dd(D.status.clockifyLast) : "–", "letzter Export")}
+      ${(() => { const td = tokenDays(); const e = D.status.tokenExpires;
+        const cls = td == null ? "" : td < 0 || td <= 3 ? "bad" : td <= 14 ? "warn" : "ok";
+        const v = td == null ? "–" : `<span class="status ${cls}"><span class="dot"></span>${td < 0 ? "abgelaufen" : td > 60 ? "noch " + Math.round(td / 30.4) + " Mt." : "noch " + td + " Tage"}</span>`;
+        return tile("GitHub-Token", v, e ? "läuft ab am " + dd(e.slice(0, 10)) : "wird beim nächsten Upload gelesen"); })()}
     </div>
     <div class="card"><div class="ch">${icBox("sync", "--s1")}<h3>Letzte Läufe</h3><span class="right">alle 3 Std., solange der Laptop läuft</span></div>
       <div class="tablewrap"><table><thead><tr><th>Zeitpunkt</th><th>Dauer</th><th>Speediance → Garmin</th><th>Garmin-Sicherung</th><th>Clockify</th><th>Status</th></tr></thead>
