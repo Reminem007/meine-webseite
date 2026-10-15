@@ -147,6 +147,20 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .alert .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warning); flex: none; }
 .alert.bad .dot { background: var(--critical); }
 .alert button { margin-left: auto; border: 0; background: transparent; text-decoration: underline; color: inherit; font-size: 13px; }
+/* ---------- Tipps */
+.tips { background: var(--surface); border: 1px solid var(--ring); border-radius: 18px; padding: 16px 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+.tips .hd { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.tips .hd h2 { margin: 0; font-size: 17px; }
+.tips .hd span { color: var(--muted); font-size: 12px; }
+.tiplist { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.tip-i { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px;
+  background: color-mix(in srgb, var(--tc) 10%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tc) 28%, transparent); }
+.tip-i .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--tc) 20%, transparent); color: var(--tc); }
+.tip-i .ic svg { width: 18px; height: 18px; }
+.tip-i b { display: block; font-size: 14.5px; line-height: 1.3; }
+.tip-i small { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 3px; line-height: 1.35; }
+.tip-i .cat { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+.tips .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
 .empty { color: var(--muted); font-size: 13px; padding: 24px 0; text-align: center; }
 .section-note { color: var(--muted); font-size: 12px; margin: -6px 0 12px; }
 
@@ -290,6 +304,7 @@ nav.bottom { display: none; }
     </div>
 
     <div id="alerts"></div>
+    <div id="tips"></div>
     <section data-tab="ov"></section>
     <section data-tab="kraft" hidden></section>
     <section data-tab="health" hidden></section>
@@ -837,6 +852,134 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => DATA
 
 function show() { $("lock").hidden = true; $("app").hidden = false; render(); }
 
+
+// ================================================================ Tipps
+// Grundlage: die letzten 7 Tage mit Daten (nicht "heute"), verglichen mit den 4 Wochen davor.
+// So stimmen die Hinweise auch, wenn der Laptop ein paar Tage aus war.
+let tipsOpen = false;
+function tipsCompute() {
+  const D = DATA, H = D.health || [], TR = D.training || [], W = D.work || [], A = D.activities || [];
+  const lastH = H.length ? H[H.length - 1].d : null;
+  const end = [lastH, TR.length && TR[TR.length - 1].d, W.length && W[W.length - 1].d].filter(Boolean).sort().pop() || todayIso();
+  const from7 = addDays(end, -6), fromB = addDays(end, -34), toB = addDays(end, -7);
+  const win = (arr, a, b) => arr.filter(x => x.d >= a && x.d <= b);
+  const h7 = win(H, from7, end), hB = win(H, fromB, toB);
+  const a7 = (k) => avg(h7.map(x => x[k])), aB = (k) => avg(hB.map(x => x[k]));
+  const out = [];
+  const T = (prio, cat, icon, tone, title, why) => out.push({ prio, cat, icon, tone, title, why });
+  const GOOD = "--good", WARN = "--s4", INFO = "--s1", BAD = "--critical";
+  const sinceDays = (d) => d ? daysBetween(d, end) : null;
+  const hmMin = (m) => `${Math.floor(m / 60)}:${pad2(Math.round(m % 60))} h`;
+
+  // ---------- Schlaf
+  const sl7 = a7("sleepH"), slB = aB("sleepH");
+  const short = h7.filter(x => x.sleepH && x.sleepH < 6.5).length;
+  if (sl7 != null && sl7 < 7 && short >= 3)
+    T(75, "Schlaf", "moon", WARN, "Du schläfst regelmässig zu wenig.", `Ø ${hmMin(sl7 * 60)} pro Nacht, ${short} Nächte unter 6:30 h. Versuch diese Woche früher ins Bett zu gehen.`);
+  const beds = h7.map(x => x.bed).filter(Boolean).map(t => { const [hh, mm] = t.split(":").map(Number); return (hh < 12 ? hh + 24 : hh) * 60 + mm; });
+  if (beds.length >= 4) {
+    const mean = avg(beds), sd = Math.sqrt(avg(beds.map(b => (b - mean) ** 2)));
+    const f = (m) => `${pad2(Math.floor(m / 60) % 24)}:${pad2(m % 60)}`;
+    if (sd > 50) T(50, "Schlaf", "moon", WARN, "Dein Schlafrhythmus schwankt stark.", `Eingeschlafen zwischen ${f(Math.min(...beds))} und ${f(Math.max(...beds))}. Feste Schlafzeiten helfen der Erholung.`);
+  }
+  const dp7 = a7("deep"), dpB = aB("deep");
+  if (dp7 != null && dpB && dp7 < dpB * 0.8) T(40, "Schlaf", "moon", INFO, "Dein Tiefschlaf ist kürzer als üblich.", `Ø ${Math.round(dp7)} min statt ${Math.round(dpB)} min. Spätes Training, Alkohol oder Bildschirm am Abend können das beeinflussen.`);
+  const sc7 = a7("sleepScore"), scB = aB("sleepScore");
+  if (sc7 != null && scB != null && sc7 >= scB + 5) T(22, "Schlaf", "moon", GOOD, "Deine Schlafqualität verbessert sich.", `Schlafscore Ø ${Math.round(sc7)} statt ${Math.round(scB)}.`);
+
+  // ---------- Herz und Erholung
+  const r7 = a7("rhr"), rB = aB("rhr");
+  if (r7 != null && rB != null && r7 >= rB + 3) T(65, "Herz", "heart", WARN, "Dein Ruhepuls ist höher als üblich.", `Ø ${Math.round(r7)} statt ${Math.round(rB)} bpm. Das passiert oft bei Stress, wenig Schlaf oder viel Training – gönn dir etwas Erholung.`);
+  else if (r7 != null && rB != null && r7 <= rB - 2) T(20, "Herz", "heart", GOOD, "Dein Ruhepuls verbessert sich.", `Ø ${Math.round(r7)} statt ${Math.round(rB)} bpm.`);
+  const last3 = h7.slice(-3), r3 = avg(last3.map(x => x.rhr)), bb3 = avg(last3.map(x => x.bbHi)), bbB = aB("bbHi"), sc3 = avg(last3.map(x => x.sleepScore));
+  if (r3 != null && rB != null && bb3 != null && bbB != null) {
+    if (r3 >= rB + 3 && bb3 <= bbB - 10) T(80, "Erholung", "battery", BAD, "Dein Körper scheint noch nicht vollständig erholt.", `Ruhepuls erhöht, Body Battery nur ${Math.round(bb3)} statt ${Math.round(bbB)}. Plane als Nächstes einen lockeren Tag oder Ruhetag.`);
+    else if (r3 <= rB && bb3 >= bbB + 5 && (sc3 == null || sc3 >= 75)) T(45, "Erholung", "battery", GOOD, "Du bist gut erholt.", `Body Battery Ø ${Math.round(bb3)}, Ruhepuls tief. Gute Voraussetzung für eine intensive Einheit.`);
+  }
+
+  // ---------- Stress
+  const st7 = a7("stress"), stB = aB("stress"), stressy = h7.filter(x => x.stress >= 40).length;
+  if ((st7 != null && stB != null && st7 >= stB + 7) || stressy >= 4)
+    T(60, "Stress", "wave", WARN, "Deine Belastung war diese Woche hoch.", `Ø Stress ${fmt(st7)}${stB != null ? ` statt ${fmt(stB)}` : ""}, ${stressy} Tage über 40. Plane bewusst Pausen, ein Spaziergang oder eine Atemübung helfen.`);
+
+  // ---------- Bewegung
+  const s7 = a7("steps"), sB = aB("steps");
+  const goalDays = h7.filter(x => x.steps && x.goal && x.steps >= x.goal).length;
+  if (s7 != null && sB && s7 < sB * 0.8) T(58, "Bewegung", "shoe", WARN, "Du warst diese Woche weniger aktiv als üblich.", `Ø ${fmt(s7)} Schritte statt ${fmt(sB)}. Ein 10-Minuten-Spaziergang pro Tag macht schon viel aus.`);
+  else if (h7.length >= 5 && goalDays >= h7.length - 1) T(25, "Bewegung", "shoe", GOOD, "Schrittziel fast jeden Tag erreicht. Super!", `An ${goalDays} von ${h7.length} Tagen.`);
+
+  // ---------- Cardio
+  const im = sum(h7.map(x => (x.imM || 0) + 2 * (x.imV || 0))), imGoal = avg(h7.map(x => x.imGoal)) || 150;
+  if (h7.length >= 5 && im < imGoal * 0.7) T(55, "Cardio", "bolt", WARN, `Noch ${fmt(imGoal - im)} Intensitätsminuten bis zum Wochenziel.`, `${fmt(im)} von ${fmt(imGoal)} in den letzten 7 Tagen. Eine lockere Lauf- oder Velorunde bringt dich näher.`);
+  else if (h7.length >= 5 && im >= imGoal) T(24, "Cardio", "bolt", GOOD, "Wochenziel Intensitätsminuten erreicht.", `${fmt(im)} von ${fmt(imGoal)} Minuten.`);
+  const cardio = A.filter(x => /run|cycl|bik|hik|swim|walk/.test(x.type || "")).map(x => x.d).sort().pop();
+  const dc = sinceDays(cardio);
+  if (dc != null && dc >= 8) T(48, "Cardio", "run", INFO, `Seit ${dc} Tagen keine Lauf- oder Velorunde.`, "Eine lockere Ausdauereinheit würde guttun.");
+
+  // ---------- Krafttraining
+  const lastTr = TR.length ? TR[TR.length - 1].d : null, dt = sinceDays(lastTr);
+  const tr7 = win(TR, from7, end);
+  if (dt != null && dt >= 5) T(70, "Krafttraining", "dumbbell", WARN, `Seit ${dt} Tagen kein Krafttraining.`, "Plane diese Woche eine Einheit am Gym Monster ein.");
+  const GROUPS = { Beine: ["quads", "hamstrings", "glutes", "calves", "adductors"], Rücken: ["lats", "upperback", "lowerback", "traps"],
+    "Brust und Schultern": ["chest", "shoulders"], Arme: ["biceps", "triceps", "forearms"], Rumpf: ["abs", "obliques"] };
+  const tr60 = win(TR, addDays(end, -60), end), gaps = [];
+  for (const [g, ms] of Object.entries(GROUPS)) {
+    const hits = tr60.filter(t => ms.some(m => (t.mus || {})[m] >= 1)).map(t => t.d);
+    const ds = hits.length ? sinceDays(hits[hits.length - 1]) : null;
+    if (tr60.length >= 3 && (ds == null || ds >= 10)) gaps.push([g, ds]);
+  }
+  if (gaps.length && (dt == null || dt < 14)) {
+    const [g, ds] = gaps.sort((a, b) => (b[1] ?? 99) - (a[1] ?? 99))[0];
+    T(57, "Krafttraining", "dumbbell", INFO, `${g} ${ds == null ? "seit über 2 Monaten" : `seit ${ds} Tagen`} nicht trainiert.`,
+      gaps.length > 1 ? `Ebenfalls länger nicht dran: ${gaps.slice(1).map(x => x[0]).join(", ")}.` : "Nimm sie ins nächste Training auf.");
+  }
+  if (tr7.length >= 5 && bb3 != null && bbB != null && bb3 < bbB - 5) T(62, "Krafttraining", "dumbbell", WARN, "Achte auf genügend Regeneration.", `${tr7.length} Krafteinheiten in 7 Tagen, Body Battery tiefer als üblich.`);
+  else if (tr7.length >= 3) T(23, "Krafttraining", "dumbbell", GOOD, `${tr7.length} Krafttrainings in den letzten 7 Tagen.`, "Starke Woche – behalte den Rhythmus bei.");
+
+  // ---------- Arbeit (Clockify)
+  const w7 = win(W, from7, end), hours7 = sum(w7.map(x => x.h));
+  const wDays = [...new Set(W.map(x => x.d))].sort();
+  let streak = 0; for (let d = end; wDays.includes(d); d = addDays(d, -1)) streak++;
+  if (hours7 > 45) T(72, "Arbeit", "briefcase", WARN, `${fmt(hours7, 1)} Stunden in 7 Tagen gearbeitet.`, "Das ist viel. Halte dir bewusst freie Zeit frei, idealerweise einen ganzen Tag.");
+  else if (hours7 > 42) T(52, "Arbeit", "briefcase", INFO, `${fmt(hours7, 1)} Stunden in 7 Tagen gearbeitet.`, "Eine volle Woche – plane die Erholung gleich mit ein.");
+  if (streak >= 10) T(70, "Arbeit", "briefcase", WARN, `Seit ${streak} Tagen ohne freien Tag.`, "Ein arbeitsfreier Tag hilft, langfristig leistungsfähig zu bleiben.");
+  const late = win(W, addDays(end, -13), end).filter(x => x.end && x.end >= "21:00");
+  if (late.length >= 3) T(50, "Arbeit", "clock", INFO, `An ${late.length} Abenden nach 21 Uhr gearbeitet.`, "Späte Arbeit verschiebt oft auch den Schlaf. Setz dir eine feste Feierabend-Zeit.");
+  const lastSat = (() => { let d = end; while (parse(d).getDay() !== 6) d = addDays(d, -1); return d; })();
+  if (wDays.includes(lastSat) && wDays.includes(addDays(lastSat, 1)) && sum(W.filter(x => x.d === lastSat || x.d === addDays(lastSat, 1)).map(x => x.h)) >= 2)
+    T(45, "Arbeit", "briefcase", INFO, "Am letzten Wochenende an beiden Tagen gearbeitet.", "Versuch, mindestens einen Wochenendtag ganz frei zu halten.");
+  const m30 = win(W, addDays(end, -29), end), tot30 = sum(m30.map(x => x.h));
+  if (tot30 > 20) {
+    const pm = new Map(); for (const x of m30) pm.set(x.p, (pm.get(x.p) || 0) + x.h);
+    const [pTop, pH] = [...pm.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (pH / tot30 >= 0.55) T(15, "Arbeit", "briefcase", INFO, `„${pTop}“ belegt ${Math.round(100 * pH / tot30)} % deiner Arbeitszeit.`, `${fmt(pH, 1)} von ${fmt(tot30, 1)} Stunden in den letzten 30 Tagen.`);
+  }
+  // ---------- Kombinationen
+  if (hours7 > 40 && sl7 != null && sl7 < 6.75) T(85, "Balance", "pulse", BAD, "Viel Arbeit und wenig Schlaf diese Woche.", `${fmt(hours7, 1)} h gearbeitet, Ø ${hmMin(sl7 * 60)} Schlaf. Plane bewusst Erholung ein, bevor du mehr Training draufpackst.`);
+
+  if (!out.length) T(10, "Alles gut", "pulse", GOOD, "Alles im grünen Bereich.", "Keine Auffälligkeiten in den letzten 7 Tagen – behalte deine Gewohnheiten bei.");
+  out.sort((a, b) => b.prio - a.prio);
+  return { tips: out, from: from7, end, stale: lastH ? daysBetween(lastH, todayIso()) : null };
+}
+const TIP_CATS = { kraft: ["Krafttraining", "Erholung"], health: ["Schlaf", "Herz", "Erholung", "Stress", "Bewegung", "Cardio", "Balance"], work: ["Arbeit", "Balance"] };
+function tipCard(t) {
+  return `<div class="tip-i" style="--tc:var(${t.tone})"><span class="ic">${icon(t.icon)}</span><div><div class="cat">${esc(t.cat)}</div><b>${esc(t.title)}</b><small>${esc(t.why)}</small></div></div>`;
+}
+function renderTips() {
+  const box = $("tips");
+  if (TAB === "sync") { box.innerHTML = ""; return; }
+  const r = tipsCompute();
+  let list = r.tips;
+  if (TIP_CATS[TAB]) list = list.filter(t => TIP_CATS[TAB].includes(t.cat));
+  if (!list.length) { box.innerHTML = ""; return; }
+  const n = TAB === "ov" ? 3 : 2, shown = tipsOpen ? list : list.slice(0, n);
+  const staleTxt = r.stale != null && r.stale >= 2 ? ` · neueste Garmin-Daten vom ${dd(addDays(todayIso(), -r.stale))}` : "";
+  box.innerHTML = `<div class="tips"><div class="hd"><h2>${TAB === "ov" ? "Deine Hinweise" : "Hinweise"}</h2><span>aus den letzten 7 Tagen (${ddShort(r.from)} – ${dd(r.end)}) im Vergleich zu deinem Schnitt${staleTxt}</span></div>
+    <div class="tiplist">${shown.map(tipCard).join("")}</div>
+    ${list.length > n ? `<button class="more" id="tipsMore">${tipsOpen ? "Weniger anzeigen" : `Alle ${list.length} Hinweise anzeigen`}</button>` : ""}</div>`;
+  const b = $("tipsMore"); if (b) b.onclick = () => { tipsOpen = !tipsOpen; renderTips(); };
+}
+
 // ================================================================ Darstellung
 function render() {
   const D = DATA;
@@ -855,6 +998,7 @@ function render() {
   if (SCOPE && !SCOPE.length) SCOPE = null;
   const [name2, dates2] = rangeLabel(); $("rangeName").textContent = name2; $("rangeDates").textContent = dates2;
   renderAlerts();
+  renderTips();
   ({ ov: renderOverview, kraft: renderKraft, health: renderHealth, work: renderWork, sync: renderSync })[TAB]();
 }
 const sec = (k) => document.querySelector(`section[data-tab="${k}"]`);
