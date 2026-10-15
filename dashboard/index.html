@@ -877,7 +877,18 @@ let resizeT, lastW = innerWidth;
 addEventListener("resize", () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(resizeT); resizeT = setTimeout(() => DATA && render(), 150); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => DATA && render());
 
+// Speediance-Einheiten aufteilen: Kraft bleibt "training", Rudern/Yoga usw. werden Aktivitäten
+function splitTraining() {
+  if (DATA._split) return;
+  const all = DATA.training || [];
+  DATA.trainingAll = all;
+  DATA.training = all.filter(t => !t.kind || t.kind === "kraft");
+  const other = all.filter(t => t.kind && t.kind !== "kraft").map(t => ({ d: t.d, t: t.t, type: t.sub || t.kind, name: t.title, km: 0, min: t.min, kcal: t.kcal, src: "Speediance" }));
+  DATA.activities = [...(DATA.activities || []), ...other].sort((a, b) => (a.d + (a.t || "")).localeCompare(b.d + (b.t || "")));
+  DATA._split = true;
+}
 function show() {
+  splitTraining();
   $("lock").hidden = true; $("app").hidden = false;
   if (DATA.tagebuch && !$("tbLink")) {
     $("sideNav").insertAdjacentHTML("beforeend", `<a class="navbtn" id="tbLink" href="../tagebuch/" style="text-decoration:none">${icon("book")}Tagebuch ↗</a>`);
@@ -948,9 +959,9 @@ function tipsCompute() {
   const im = sum(h7.map(x => (x.imM || 0) + 2 * (x.imV || 0))), imGoal = avg(h7.map(x => x.imGoal)) || 150;
   if (h7.length >= 5 && im < imGoal * 0.7) T(55, "Cardio", "bolt", WARN, `Noch ${fmt(imGoal - im)} Intensitätsminuten bis zum Wochenziel.`, `${fmt(im)} von ${fmt(imGoal)} in den letzten 7 Tagen. Eine lockere Lauf- oder Velorunde bringt dich näher.`);
   else if (h7.length >= 5 && im >= imGoal) T(24, "Cardio", "bolt", GOOD, "Wochenziel Intensitätsminuten erreicht.", `${fmt(im)} von ${fmt(imGoal)} Minuten.`);
-  const cardio = A.filter(x => /run|cycl|bik|hik|swim|walk/.test(x.type || "")).map(x => x.d).sort().pop();
+  const cardio = A.filter(x => /run|cycl|bik|hik|swim|walk|row|ski|cardio/.test(x.type || "")).map(x => x.d).sort().pop();
   const dc = sinceDays(cardio);
-  if (dc != null && dc >= 8) T(48, "Cardio", "run", INFO, `Seit ${dc} Tagen keine Lauf- oder Velorunde.`, "Eine lockere Ausdauereinheit würde guttun.", [cardio, end]);
+  if (dc != null && dc >= 8) T(48, "Cardio", "run", INFO, `Seit ${dc} Tagen keine Ausdauereinheit.`, "Laufen, Velo oder Rudern am Gym Monster – eine lockere Einheit würde guttun.", [cardio, end]);
 
   // ---------- Krafttraining
   const lastTr = TR.length ? TR[TR.length - 1].d : null, dt = sinceDays(lastTr);
@@ -1018,8 +1029,8 @@ function tipsCompute() {
     }
     const dW = diff(x => (wBy.get(x.d) || 0) > 9);
     if (dW && dW[0] <= -0.4) finds.push([-dW[0], "briefcase", INFO, "Lange Arbeitstage drücken deine Stimmung.", `An Tagen mit über 9 h Arbeit im Schnitt ${fmt(-dW[0], 1)} Punkte tiefer.`]);
-    const dA = diff(x => A.some(a => a.d === x.d));
-    if (dA && dA[0] >= 0.4) finds.push([dA[0], "run", GOOD, "Bewegung draussen tut dir gut.", `An Tagen mit Lauf, Velo oder Wanderung ist deine Stimmung im Schnitt ${fmt(dA[0], 1)} Punkte höher.`]);
+    const dA = diff(x => A.some(a => a.d === x.d && !/yoga|pilates|flexib/.test(a.type || "")));
+    if (dA && dA[0] >= 0.4) finds.push([dA[0], "run", GOOD, "Ausdauer tut dir gut.", `An Tagen mit Lauf, Velo, Wanderung oder Rudern ist deine Stimmung im Schnitt ${fmt(dA[0], 1)} Punkte höher.`]);
     finds.sort((a, b) => b[0] - a[0]).slice(0, 2).forEach(([, ic, tone, title, why], i) =>
       T(30 - i, "Stimmung", ic, tone, title, why + ` (${M90.length} Tage mit Einträgen)`, [M90[0].d, end]));
   }
@@ -1241,15 +1252,18 @@ function curveOr(id, data, labels, color, unit, zero, type = "line") {
 const ACT = { running: ["run", "Laufen", "--s2"], trail_running: ["run", "Trailrun", "--s2"], treadmill_running: ["run", "Laufband", "--s2"],
   cycling: ["bike", "Velo", "--s1"], road_biking: ["bike", "Rennvelo", "--s1"], mountain_biking: ["bike", "Mountainbike", "--s1"], indoor_cycling: ["bike", "Indoor-Velo", "--s1"], e_bike_fitness: ["bike", "E-Bike", "--s1"],
   hiking: ["mountain", "Wandern", "--s3"], walking: ["shoe", "Gehen", "--s3"], lap_swimming: ["swim", "Schwimmen", "--resp"], open_water_swimming: ["swim", "Schwimmen", "--resp"],
-  strength_training: ["dumbbell", "Kraft", "--kraft"] };
+  strength_training: ["dumbbell", "Kraft", "--kraft"],
+  indoor_rowing: ["wave", "Rudern", "--s1"], rowing: ["wave", "Rudern", "--s1"], indoor_skiing: ["mountain", "Skistock", "--s3"],
+  indoor_cycling: ["bike", "Indoor-Velo", "--s1"], cardio_training: ["bolt", "Cardio", "--s2"],
+  yoga: ["smile", "Yoga", "--sleep"], pilates: ["smile", "Pilates", "--sleep"], flexibility_training: ["smile", "Mobilität", "--sleep"] };
 function actList(acts) {
   if (!acts.length) return '<div class="empty">Keine Aktivitäten im Zeitraum.</div>';
   return `<div class="list">${acts.map(a => {
     const [ic, typ, c] = a.kind === "kraft" ? ["dumbbell", "Krafttraining", "--kraft"] : (ACT[a.type] || ["pulse", a.type, "--s1"]);
     const main = a.kind === "kraft" ? `${fmt(a.vol)} kg` : a.km ? `${fmt(a.km, 1)} km` : `${fmt(a.min)} min`;
-    const sub = a.kind === "kraft" ? `${fmt(a.min)} min${a.w ? ` · Ø ${fmt(a.w)} W` : ""}` : `${fmt(a.min)} min${a.hr ? ` · Ø ${fmt(a.hr)} bpm` : ""}`;
+    const sub = a.kind === "kraft" ? `${fmt(a.min)} min${a.w ? ` · Ø ${fmt(a.w)} W` : ""}` : a.km ? `${fmt(a.min)} min${a.hr ? ` · Ø ${fmt(a.hr)} bpm` : ""}` : (a.kcal ? `${fmt(a.kcal)} kcal` : (a.hr ? `Ø ${fmt(a.hr)} bpm` : ""));
     return `<div class="li"><span class="ic" style="background:color-mix(in srgb, var(${c}) 16%, transparent);color:var(${c})">${icon(ic)}</span>
-      <div class="t"><b>${esc(a.name || typ)}</b><span>${wd(a.d)} ${dd(a.d)}${a.t ? " · " + esc(a.t) : ""} · ${esc(typ)}</span></div>
+      <div class="t"><b>${esc(a.name || typ)}</b><span>${wd(a.d)} ${dd(a.d)}${a.t ? " · " + esc(a.t) : ""} · ${esc(typ)}${a.src ? " · " + esc(a.src) : ""}</span></div>
       <div class="m"><b>${main}</b><span>${sub}</span></div></div>`;
   }).join("")}</div>`;
 }
@@ -1477,7 +1491,7 @@ function techHtml() {
   const td = tokenDays();
   const rows = (d) => [["Was", d.was], ["Schnittstelle", d.schnittstelle], ["Repository", d.repository], ["Adresse", d.adresse], ["Dateien", d.dateien],
     ["Zugang", d.zugang], ["Liegt in", d.zugang_ort], ["Läuft ab", d.laeuft_ab ? { html: expPill(d.laeuft_ab) + (d.name === "GitHub – Website" && DATA.status.tokenExpires ? ` <span class="muted">(laut GitHub: ${dd(DATA.status.tokenExpires.slice(0, 10))}${td != null ? `, noch ${td} Tage` : ""})</span>` : "") } : null],
-    ["Erneuern", d.erneuern], ["Code", d.code], ["Ziel", d.ziel], ["Kopie", d.kopie], ["Datenschutz", d.datenschutz], ["Risiko", d.risiko], ["Achtung", d.achtung]]
+    ["Einordnung", d.einordnung], ["Erneuern", d.erneuern], ["Code", d.code], ["Ziel", d.ziel], ["Kopie", d.kopie], ["Datenschutz", d.datenschutz], ["Risiko", d.risiko], ["Achtung", d.achtung]]
     .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${v && v.html ? v.html : val(v)}</dd>`).join("");
   const V = S.verschluesselung || {};
   return `
@@ -1528,7 +1542,7 @@ function renderSync() {
     <div class="tiles">
       ${tile("Letzter Lauf", last ? ago(last.start) : "–", last ? new Date(last.start).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }) : "noch keine Läufe")}
       ${tile("Status", statusHtml, lastOk && last && !last.ok ? "Letzter fehlerfreier Lauf " + ago(lastOk.start) : "")}
-      ${tile("Trainings gesichert", fmt((D.training || []).length), "Speediance, gesamt")}
+      ${tile("Trainings gesichert", fmt((D.trainingAll || D.training || []).length), "Speediance, gesamt")}
       ${tile("Garmin-Sicherung", D.status.garminBackupUntil ? "ab " + dd(D.status.garminBackupUntil) : "–", D.status.garminComplete ? "vollständig" : "Vergangenheit wird nachgeholt")}
       ${tile("Clockify-Export", D.status.clockifyLast ? dd(D.status.clockifyLast) : "–", "letzter Export")}
       ${(() => { const td = tokenDays(); const e = D.status.tokenExpires;
