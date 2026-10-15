@@ -314,6 +314,7 @@ nav.bottom { display: none; }
     <section data-tab="health" hidden></section>
     <section data-tab="work" hidden></section>
     <section data-tab="sync" hidden></section>
+    <section data-tab="help" hidden></section>
   </main>
 
   <nav class="bottom" id="bottomNav" aria-label="Bereiche"></nav>
@@ -829,13 +830,13 @@ function bodyPair(fills, titles, small = false) {
 // ================================================================ Navigation
 const TABS = [
   ["ov", "Übersicht", "grid"], ["kraft", "Krafttraining", "dumbbell"], ["health", "Gesundheit", "heart"],
-  ["work", "Arbeitszeit", "briefcase"], ["sync", "Synchronisation", "sync"],
+  ["work", "Arbeitszeit", "briefcase"], ["sync", "Synchronisation", "sync"], ["help", "Handbuch", "book"],
 ];
 const SHORT = { ov: "Übersicht", kraft: "Kraft", health: "Gesundheit", work: "Arbeit", sync: "Sync" };
 let TAB = (location.hash || "").slice(1);
 if (!TABS.some(t => t[0] === TAB)) TAB = "ov";
 $("sideNav").innerHTML = TABS.map(([k, n, i]) => `<button class="navbtn" data-tab="${k}">${icon(i)}${n}</button>`).join("");
-$("bottomNav").innerHTML = TABS.map(([k, , i]) => `<button data-tab="${k}">${icon(i)}${SHORT[k]}</button>`).join("");
+$("bottomNav").innerHTML = TABS.filter(([k]) => SHORT[k]).map(([k, , i]) => `<button data-tab="${k}">${icon(i)}${SHORT[k]}</button>`).join("");
 for (const nav of [$("sideNav"), $("bottomNav")]) nav.addEventListener("click", (ev) => {
   const b = ev.target.closest("button[data-tab]"); if (!b) return;
   TAB = b.dataset.tab; history.replaceState(null, "", "#" + TAB); scrollTo(0, 0); render();
@@ -1019,7 +1020,7 @@ function tipCard(t, base) {
 }
 function renderTips() {
   const box = $("tips");
-  if (TAB === "sync") { box.innerHTML = ""; return; }
+  if (TAB === "sync" || TAB === "help") { box.innerHTML = ""; return; }
   const r = tipsCompute();
   let list = r.tips;
   if (TIP_CATS[TAB]) list = list.filter(t => TIP_CATS[TAB].includes(t.cat));
@@ -1052,7 +1053,8 @@ function render() {
   const [name2, dates2] = rangeLabel(); $("rangeName").textContent = name2; $("rangeDates").textContent = dates2;
   renderAlerts();
   renderTips();
-  ({ ov: renderOverview, kraft: renderKraft, health: renderHealth, work: renderWork, sync: renderSync })[TAB]();
+  $("rangeBtn").closest(".rangebar").style.visibility = TAB === "help" ? "hidden" : "";
+  ({ ov: renderOverview, kraft: renderKraft, health: renderHealth, work: renderWork, sync: renderSync, help: renderHelp })[TAB]();
 }
 const sec = (k) => document.querySelector(`section[data-tab="${k}"]`);
 const rangeWord = () => single() ? "am Tag" : "im Zeitraum";
@@ -1379,7 +1381,28 @@ function renderAlerts() {
     : `GitHub-Token läuft in ${td} Tag${td === 1 ? "" : "en"} ab. Neues Token erstellen, dann Dashboard_einrichten.bat.`]);
   $("alerts").innerHTML = out.map(([c, t]) => `<div class="alert ${c}"><span class="dot"></span><span>${t}</span>${TAB !== "sync" ? '<button data-go="sync">Details</button>' : ""}</div>`).join("");
 }
+document.addEventListener("click", (ev) => { const b = ev.target.closest("[data-goto]"); if (!b) return; TAB = b.dataset.goto; history.replaceState(null, "", "#" + TAB); scrollTo(0, 0); render(); });
 $("alerts").addEventListener("click", (ev) => { const b = ev.target.closest("[data-go]"); if (!b) return; TAB = b.dataset.go; history.replaceState(null, "", "#" + TAB); render(); });
+
+// ---------------------------------------------------------------- Handbuch (kommt verschlüsselt mit den Daten)
+function renderHelp() {
+  const S = sec("help");
+  if (!DATA.handbuch) { S.innerHTML = `<div class="card"><div class="empty">Das Handbuch kommt mit dem nächsten Abgleich.</div></div>`; return; }
+  if (S.dataset.loaded === "1" && S.dataset.theme === (document.documentElement.getAttribute("data-theme") || "")) return;
+  const th = document.documentElement.getAttribute("data-theme");
+  // fremde Schriften weglassen (Dashboard lädt bewusst nichts von aussen)
+  let html = DATA.handbuch.replace(/<link[^>]+fonts\.(googleapis|gstatic)\.com[^>]*>/g, "");
+  if (th) html = html.replace('<html lang="de">', `<html lang="de" data-theme="${th}">`);
+  S.innerHTML = `<iframe id="helpFrame" title="Handbuch" style="width:100%;border:0;border-radius:18px;min-height:70vh;display:block;background:var(--surface)"></iframe>`;
+  const f = $("helpFrame");
+  f.addEventListener("load", () => {
+    const fit = () => { try { f.style.height = f.contentDocument.documentElement.scrollHeight + "px"; } catch (e) {} };
+    fit(); setTimeout(fit, 400);
+    try { f.contentDocument.querySelectorAll("a[href^='http']").forEach(a => a.target = "_blank"); } catch (e) {}
+  });
+  f.srcdoc = html;
+  S.dataset.loaded = "1"; S.dataset.theme = th || "";
+}
 
 // ---------------------------------------------------------------- Synchronisation
 function renderSync() {
@@ -1413,6 +1436,8 @@ function renderSync() {
         const v = td == null ? "–" : `<span class="status ${cls}"><span class="dot"></span>${td < 0 ? "abgelaufen" : td > 60 ? "noch " + Math.round(td / 30.4) + " Mt." : "noch " + td + " Tage"}</span>`;
         return tile("GitHub-Token", v, e ? "läuft ab am " + dd(e.slice(0, 10)) : "wird beim nächsten Upload gelesen"); })()}
     </div>
+    <div class="card" style="margin-bottom:14px"><div class="ch">${icBox("book", "--s1")}<h3>Wie funktioniert das alles?</h3><span class="right"><button class="ghost" data-goto="help">Handbuch öffnen</button></span></div>
+      <div class="muted">Bausteine, Datenfluss, Startdateien, Logins und was zu tun ist, wenn etwas klemmt.</div></div>
     <div class="card"><div class="ch">${icBox("sync", "--s1")}<h3>Letzte Läufe</h3><span class="right">alle 3 Std., solange der Laptop läuft</span></div>
       <div class="tablewrap"><table><thead><tr><th>Zeitpunkt</th><th>Dauer</th><th>Speediance → Garmin</th><th>Garmin-Sicherung</th><th>Clockify</th><th>Status</th></tr></thead>
       <tbody>${rows || `<tr><td colspan="6" class="empty">Noch keine Läufe protokolliert.</td></tr>`}</tbody></table></div></div>`;
