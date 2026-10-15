@@ -126,11 +126,27 @@ input[type=date], input[type=time] { padding: 6px 8px; border-radius: 10px; bord
 .tbar .b div { height: 100%; border-radius: 5px; }
 .tbar .v { text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 13px; }
 
+/* KI-Rückmeldung */
+.reply { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; }
+.reply .rh { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; margin-bottom: 4px; white-space: normal; }
+.reply.wait { background: transparent; border-style: dashed; color: var(--muted); font-size: 13px; }
+.rtag { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); font-weight: 600; }
+.aiopt { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+.aiopt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.aiopt small { display: block; color: var(--muted); font-size: 12.5px; }
+/* Info */
+.info dl { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 0; }
+.info dt { font-weight: 700; font-size: 14.5px; }
+.info dd { margin: 2px 0 0; color: var(--ink-2); font-size: 14.5px; line-height: 1.5; }
+.info code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+.info a.ghost { color: var(--ink); }
+.toplink { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 14px; text-decoration: none; }
+.toplink:hover { color: var(--ink); text-decoration: underline; }
 /* Navigation */
 nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: 4px;
   background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--ring); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); }
-nav button { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11.5px; color: var(--muted); padding: 4px 18px; border-radius: 12px; }
+nav button { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11.5px; color: var(--muted); padding: 4px 12px; border-radius: 12px; min-width: 64px; }
 nav button svg { width: 24px; height: 24px; }
 nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
 .badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--critical); color: #fff; font-size: 11px; display: inline-grid; place-items: center; }
@@ -148,12 +164,14 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
     <label class="check" style="margin-bottom:14px"><input id="remember" type="checkbox" checked> Auf diesem Gerät merken</label>
     <button class="primary" type="submit" id="unlockbtn">Öffnen</button>
     <div class="err" id="err" role="alert"></div>
+    <div style="margin-top:14px;text-align:center"><a class="toplink" href="../dashboard/">← Zum Dashboard</a></div>
   </form>
 </div>
 
 <div id="app" hidden>
   <div class="wrap">
     <header>
+      <a class="toplink" href="../dashboard/" title="Zum Dashboard" aria-label="Zum Dashboard"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></a>
       <h1 id="title">Schreiben</h1>
       <span class="pill" id="status">bereit</span>
       <button class="ghost" id="lockBtn">Sperren</button>
@@ -184,6 +202,7 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
         <div class="q">Gedanken <span>freiwillig</span></div>
         <div class="prompts" id="prompts"></div>
         <textarea id="fText" placeholder="Was beschäftigt dich? Was war gut, was schwer?"></textarea>
+        <label class="aiopt"><input type="checkbox" id="fAi" checked><span>KI-Rückmeldung zu diesem Text<small>Die KI läuft nur auf deinem Laptop. Die Antwort erscheint nach dem nächsten Abgleich unter „Einträge“.</small></span></label>
 
         <div class="savebar">
           <button class="ghost" id="cancelEdit" hidden>Abbrechen</button>
@@ -211,12 +230,44 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
       <div class="card"><h3>Stichworte und Stimmung</h3><div class="sub" style="margin:-6px 0 10px">Ø Stimmung an Tagen mit diesem Stichwort</div><div id="tagStats"></div></div>
       <div class="card"><h3>Wochentage</h3><div id="wdStats"></div></div>
     </section>
+
+    <!-- Info -->
+    <section data-tab="info" hidden>
+      <div class="card info">
+        <h3>Wo liegen meine Tagebuch-Daten?</h3>
+        <dl>
+          <dt>Einträge und KI-Rückmeldungen</dt>
+          <dd>Im <b>privaten</b> GitHub-Repository <code>Reminem007/tagebuch</code>, jeder Eintrag als eigene Datei in <code>eintraege/</code>, Rückmeldungen in <code>antworten/</code>. Alles verschlüsselt, schon auf diesem Gerät, bevor es gesendet wird. GitHub sieht nur Zeichensalat.</dd>
+          <dt>Sicherheitskopie</dt>
+          <dd>Auf deinem Laptop, bei jedem Abgleich (alle 3 Std.): <code>C:\Users\remyn\AppData\Local\Automatisierung\speediance2garmin\tagebuch_kopie\</code>. Ebenfalls verschlüsselt. Gelöschte Einträge landen dort in <code>_geloescht\</code>.</dd>
+          <dt>KI-Rückmeldung</dt>
+          <dd>Schreibt das Modell <code>qwen3-8b</code> in LM Studio, auf deinem Laptop. Dein Text geht an keinen Cloud-Dienst. Die Antwort kommt beim nächsten Abgleich, also wenn der Laptop läuft. Ausschalten pro Eintrag mit dem Häkchen beim Schreiben.</dd>
+          <dt>Im Dashboard</dt>
+          <dd>Nur die Zahlen: Stimmung, Energie und Anspannung pro Tag. Nie dein Text, nie deine Stichworte.</dd>
+          <dt>Auf diesem Gerät</dt>
+          <dd>Mit „Auf diesem Gerät merken“ bleibt der Schlüssel im Browser gespeichert, dazu verschlüsselte Einträge als Zwischenspeicher und ein verschlüsselter Entwurf. „Sperren“ löscht Schlüssel und Entwurf.</dd>
+          <dt>Passwort</dt>
+          <dd>Nur in deinem Kopf und im Windows-Tresor des Laptops. Vergessen heisst: Die Einträge sind verloren. Es gibt bewusst keine Hintertür.</dd>
+          <dt>Einrichtung und Token</dt>
+          <dd>Mit <code>Tagebuch_einrichten.bat</code> im Ordner <code>03_resources\skripte\speediance2garmin</code>. Das Token läuft nach einem Jahr ab, dann dort erneuern.</dd>
+        </dl>
+      </div>
+      <div class="card info">
+        <h3>Gut zu wissen</h3>
+        <dl>
+          <dt>Ohne Internet</dt><dd>Einträge werden gespeichert und automatisch gesendet, sobald wieder Internet da ist.</dd>
+          <dt>Kein Therapeut</dt><dd>Das Tagebuch und die KI helfen beim Sortieren von Gedanken. Wenn es dir schlecht geht, rede mit einem Menschen: <b>Die Dargebotene Hand 143</b> (rund um die Uhr, auch Chat auf 143.ch), im Notfall <b>144</b>.</dd>
+        </dl>
+        <div class="row" style="margin-top:14px"><a class="ghost" href="../dashboard/" style="text-decoration:none">Zum Dashboard</a><a class="ghost" href="../dashboard/#help" style="text-decoration:none">Handbuch</a></div>
+      </div>
+    </section>
   </div>
 
   <nav id="nav" aria-label="Bereiche">
     <button data-tab="write" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Schreiben</button>
     <button data-tab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h9a3 3 0 0 1 3 3v13H9a2 2 0 0 1-2-2z"/><path d="M11 9h5M11 13h3"/></svg>Einträge</button>
     <button data-tab="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M3 21h18"/></svg>Verlauf</button>
+    <button data-tab="info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg>Info</button>
   </nav>
 </div>
 
@@ -229,7 +280,7 @@ const ls = {
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
 const K_KEY = "tb_key_v1", K_CACHE = "tb_cache_v1", K_QUEUE = "tb_queue_v1", K_DRAFT = "tb_draft_v1";
-let KEY = null, CFG = null, ENTRIES = new Map(), EDIT = null;
+let KEY = null, CFG = null, ENTRIES = new Map(), ANSWERS = new Map(), EDIT = null;
 
 // ============================================================ Krypto (kompatibel mit tagebuch.py)
 const b64 = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000)); return btoa(s); };
@@ -262,7 +313,7 @@ async function listRemote() {
   const r = await gh("GET", `/git/trees/${CFG.branch}?recursive=1`);
   if (r.status === 404 || r.status === 409) return [];
   if (!r.ok) throw new Error("GitHub antwortet nicht (" + r.status + ")");
-  return (await r.json()).tree.filter(x => x.type === "blob" && x.path.startsWith("eintraege/") && x.path.endsWith(".json"));
+  return (await r.json()).tree.filter(x => x.type === "blob" && /^(eintraege|antworten)\//.test(x.path) && x.path.endsWith(".json"));
 }
 async function blob(sha) {
   const r = await gh("GET", `/git/blobs/${sha}`);
@@ -340,17 +391,20 @@ async function loadEntries() {
     let i = 0;
     const worker = async () => { while (i < todo.length) { const x = todo[i++]; cache[x.sha] = await blob(x.sha); } };
     await Promise.all(Array.from({ length: 6 }, worker));
-    ENTRIES = new Map();
+    ENTRIES = new Map(); ANSWERS = new Map();
     for (const x of remote) {
       keep[x.sha] = cache[x.sha];
-      try { const e = await dec(cache[x.sha]); e.path = x.path; e.sha = x.sha; ENTRIES.set(e.id, e); } catch (err) { /* fremde Datei */ }
+      try {
+        const e = await dec(cache[x.sha]); e.path = x.path; e.sha = x.sha;
+        if (x.path.startsWith("antworten/")) ANSWERS.set(e.id, e); else ENTRIES.set(e.id, e);
+      } catch (err) { /* fremde Datei */ }
     }
     ls.set(K_CACHE, JSON.stringify(keep));
     await flushQueue();
     setStatus(queueLen() ? `${queueLen()} wartet` : "gespeichert", queueLen() ? "warn" : "");
   } catch (e) {
     // offline: aus dem Cache anzeigen
-    for (const o of Object.values(cache)) { try { const x = await dec(o); if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
+    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
     setStatus(navigator.onLine ? "Fehler" : "offline", navigator.onLine ? "bad" : "warn");
     if (navigator.onLine) toast(e.message);
   }
@@ -432,6 +486,7 @@ function resetForm(e) {
   $("fDate").value = e?.d || isoLocal(now);
   $("fTime").value = e?.t || `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
   $("fText").value = e?.text || "";
+  $("fAi").checked = e ? e.ai !== false : true;
   $("formTitle").textContent = e ? "Eintrag bearbeiten" : "Wie geht es dir?";
   $("formSub").textContent = e ? "Änderungen werden verschlüsselt gespeichert." : "Kurzer Check-in, der Text ist freiwillig.";
   $("cancelEdit").hidden = !e;
@@ -468,7 +523,7 @@ $("saveBtn").addEventListener("click", async () => {
   const nowIso = new Date().toISOString();
   const id = EDIT ? EDIT.id : b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[+/=]/g, c => ({ "+": "x", "/": "y", "=": "" }[c]));
   const entry = { v: 1, id, d: $("fDate").value, t: $("fTime").value, mood: FORM.mood, energy: FORM.energy, tension: FORM.tension,
-    tags: [...FORM.tags], text, created: EDIT ? EDIT.created : nowIso, updated: nowIso };
+    tags: [...FORM.tags], text, ai: $("fAi").checked, created: EDIT ? EDIT.created : nowIso, updated: nowIso };
   const path = EDIT ? EDIT.path || `eintraege/${id}.json` : `eintraege/${id}.json`;
   const encObj = await enc(entry);
   $("saveBtn").disabled = true;
@@ -476,7 +531,7 @@ $("saveBtn").addEventListener("click", async () => {
     const sha = await putFile(path, encObj, EDIT && !EDIT.pending ? EDIT.sha : undefined);
     const cache = readJSON(K_CACHE, {}); cache[sha] = encObj; ls.set(K_CACHE, JSON.stringify(cache));
     ENTRIES.set(id, { ...entry, path, sha });
-    setStatus("gespeichert"); toast("Gespeichert und verschlüsselt ✓");
+    setStatus("gespeichert"); toast(entry.ai && text.length >= 15 ? "Gespeichert ✓ · Rückmeldung folgt beim nächsten Abgleich" : "Gespeichert und verschlüsselt ✓");
   } catch (e) {
     if (e instanceof TypeError) {    // offline -> später senden
       const q = readJSON(K_QUEUE, []).filter(x => x.id !== id);
@@ -514,10 +569,20 @@ function renderList() {
     html += `<div class="entry" data-id="${esc(e.id)}"><div class="top"><div class="date">${WD[d.getDay()]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}<span>${esc(e.t || "")}${e.pending ? " · wartet auf Internet" : ""}</span></div>
       <div class="dots">${dotHtml("mood", e.mood, "Stimmung")}${dotHtml("energy", e.energy, "Energie")}${dotHtml("tension", e.tension, "Anspannung")}</div></div>
       ${e.text ? `<div class="txt ${open ? "" : "clip"}">${esc(e.text)}</div>` : ""}
-      ${(e.tags || []).length ? `<div class="tags">${e.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
+      ${(e.tags || []).length || ANSWERS.has(e.id) ? `<div class="tags">${(e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("")}${!open && ANSWERS.has(e.id) ? `<span class="rtag">Rückmeldung</span>` : ""}</div>` : ""}
+      ${open ? replyHtml(e) : ""}
       ${open ? `<div class="acts"><button class="link" data-act="edit">Bearbeiten</button><button class="link" data-act="del" style="color:var(--critical)">Löschen</button></div>` : ""}</div>`;
   }
   $("entries").innerHTML = `<div class="legend" style="margin:0 4px 4px">Zahlen: Stimmung · Energie · Anspannung (1–5), antippen zum Öffnen</div>` + html;
+}
+function replyHtml(e) {
+  const a = ANSWERS.get(e.id);
+  if (a) {
+    const when = a.created ? new Date(a.created).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }) : "";
+    return `<div class="reply"><div class="rh">Rückmeldung · lokale KI${when ? " · " + when : ""}${e.updated && a.created && new Date(e.updated) > new Date(a.created) ? " · zu einer früheren Fassung, neue folgt" : ""}</div>${esc(a.text)}</div>`;
+  }
+  if (e.ai !== false && (e.text || "").trim().length >= 15) return `<div class="reply wait">Die KI-Rückmeldung folgt beim nächsten Abgleich deines Laptops.</div>`;
+  return "";
 }
 $("search").addEventListener("input", renderList);
 $("entries").addEventListener("click", async (ev) => {
@@ -527,7 +592,10 @@ $("entries").addEventListener("click", async (ev) => {
   if (act === "edit") { resetForm(e); go("write"); return; }
   if (act === "del") {
     if (!confirm("Diesen Eintrag wirklich löschen? Auf dem Laptop bleibt eine verschlüsselte Kopie im Ordner _geloescht.")) return;
-    try { if (!e.pending) await delFile(e.path, e.sha); }
+    try {
+      if (!e.pending) await delFile(e.path, e.sha);
+      const a = ANSWERS.get(e.id); if (a && a.path) { await delFile(a.path, a.sha); ANSWERS.delete(e.id); }
+    }
     catch (err) {
       if (!(err instanceof TypeError)) { toast(err.message); return; }
       const q = readJSON(K_QUEUE, []); q.push({ id: e.id, path: e.path, sha: e.sha, del: true }); ls.set(K_QUEUE, JSON.stringify(q));
@@ -586,7 +654,7 @@ function drawChart(days) {
 }
 
 // ============================================================ Navigation
-const TITLES = { write: "Schreiben", list: "Einträge", trend: "Verlauf" };
+const TITLES = { write: "Schreiben", list: "Einträge", trend: "Verlauf", info: "Info" };
 let TAB = "write";
 function go(t) {
   TAB = t;
