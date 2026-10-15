@@ -162,6 +162,8 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .tip-i .cat { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
 .tip-i .per { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tip-i .per svg { width: 12px; height: 12px; flex: none; }
+.tiplegend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.tiplegend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
 .tips .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
 .empty { color: var(--muted); font-size: 13px; padding: 24px 0; text-align: center; }
 .section-note { color: var(--muted); font-size: 12px; margin: -6px 0 12px; }
@@ -982,6 +984,7 @@ function renderTips() {
   const staleTxt = r.stale != null && r.stale >= 2 ? ` · neueste Garmin-Daten vom ${dd(addDays(todayIso(), -r.stale))}` : "";
   box.innerHTML = `<div class="tips"><div class="hd"><h2>${TAB === "ov" ? "Deine Hinweise" : "Hinweise"}</h2><span>berechnet beim letzten Abgleich, neueste Daten vom ${dd(r.end)}${staleTxt}</span></div>
     <div class="tiplist">${shown.map(t => tipCard(t, r.base)).join("")}</div>
+    <div class="tiplegend">${[["--critical", "ernst nehmen"], ["--s4", "beachten"], ["--s1", "zur Info"], ["--good", "gut gemacht"]].map(([c, t]) => `<span><i style="background:var(${c})"></i>${t}</span>`).join("")}</div>
     ${list.length > n ? `<button class="more" id="tipsMore">${tipsOpen ? "Weniger anzeigen" : `Alle ${list.length} Hinweise anzeigen`}</button>` : ""}</div>`;
   const b = $("tipsMore"); if (b) b.onclick = () => { tipsOpen = !tipsOpen; renderTips(); };
 }
