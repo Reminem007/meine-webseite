@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tagebuch">
+<meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<title>Tagebuch</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data:">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236b5bd2'/%3E%3Cpath d='M20 16h20a6 6 0 0 1 6 6v26H24a4 4 0 0 1-4-4z' fill='none' stroke='%23fff' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M27 26h12M27 34h8' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%236b5bd2'/%3E%3Cpath d='M20 16h20a6 6 0 0 1 6 6v26H24a4 4 0 0 1-4-4z' fill='none' stroke='%23fff' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M27 26h12M27 34h8' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f3f2ee; --surface: #fcfcfb; --surface-2: #efeee9; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e5e4dd; --axis: #c3c2b7; --ring: rgba(11,11,11,0.07); --track: #e9e8e2;
+  --shadow: 0 1px 2px rgba(20,20,10,.04), 0 6px 20px rgba(20,20,10,.04);
+  --accent: #6b5bd2; --good: #0ca30c; --critical: #d03b3b; --warning: #fab219;
+  --m1: #d9435f; --m2: #ec8a4b; --m3: #c9a227; --m4: #5fb36a; --m5: #1baf7a;
+  --c-mood: #6b5bd2; --c-energy: #eb6834; --c-tension: #2a9bb5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232322; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8f8d86;
+    --grid: #2c2c2a; --axis: #3b3b38; --ring: rgba(255,255,255,0.07); --track: #2b2b29; --shadow: none;
+    --accent: #8b7df0; --m1: #e5566f; --m2: #e0884d; --m3: #c9a227; --m4: #5fb36a; --m5: #22b884;
+    --c-mood: #8b7df0; --c-energy: #e0703c; --c-tension: #45b3cc;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 14px 16px calc(96px + env(safe-area-inset-bottom)); }
+
+/* Sperre */
+#lock { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+#lock form { background: var(--surface); border: 1px solid var(--ring); border-radius: 22px; padding: 28px; width: 100%; max-width: 380px; box-shadow: var(--shadow); }
+#lock .logo { width: 48px; height: 48px; border-radius: 14px; background: var(--accent); display: grid; place-items: center; margin-bottom: 14px; }
+#lock h1 { margin: 0 0 4px; font-size: 24px; }
+.sub { color: var(--muted); font-size: 13.5px; }
+#lock input[type=password] { width: 100%; padding: 12px; border: 1px solid var(--axis); border-radius: 12px; background: var(--page); margin: 16px 0 12px; font-size: 17px; }
+.primary { border: 0; border-radius: 12px; background: var(--ink); color: var(--page); font-weight: 600; padding: 12px 16px; }
+.primary:disabled { opacity: .5; cursor: default; }
+#lock .primary { width: 100%; }
+.err { color: var(--critical); font-size: 14px; min-height: 20px; margin-top: 8px; }
+label.check { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--ink-2); }
+
+/* Kopf */
+header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+header h1 { margin: 0; font-size: 24px; flex: 1; }
+.pill { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.pill.warn { background: color-mix(in srgb, var(--warning) 25%, var(--surface)); }
+.pill.bad { background: color-mix(in srgb, var(--critical) 18%, var(--surface)); color: var(--critical); }
+.ghost { border: 1px solid var(--ring); background: var(--surface); padding: 6px 12px; border-radius: 10px; font-size: 14px; }
+.link { border: 0; background: none; padding: 0; color: var(--ink-2); text-decoration: underline; font-size: 14px; }
+
+/* Karten */
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 20px; padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; }
+.card h2 { margin: 0 0 4px; font-size: 18px; }
+.card h3 { margin: 0 0 10px; font-size: 15px; }
+.q { margin: 16px 0 6px; font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; }
+.q span { color: var(--muted); font-weight: 400; font-size: 13px; }
+.scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.scale button { border: 1px solid var(--ring); background: var(--surface-2); border-radius: 12px; height: 46px; font-weight: 700; font-size: 17px; color: var(--ink-2); transition: transform .1s; }
+.scale button[aria-pressed="true"] { background: var(--sc); border-color: var(--sc); color: #fff; transform: scale(1.04); }
+.ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 1px solid var(--ring); background: var(--surface-2); border-radius: 99px; padding: 5px 12px; font-size: 14px; }
+.chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.addtag { display: flex; gap: 6px; margin-top: 8px; }
+.addtag input { flex: 1; min-width: 0; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--axis); background: var(--page); font-size: 15px; }
+textarea { width: 100%; min-height: 160px; resize: vertical; padding: 12px; border-radius: 14px; border: 1px solid var(--axis); background: var(--page); font-size: 16px; line-height: 1.55; }
+.prompts { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; scrollbar-width: none; }
+.prompts button { flex: none; border: 1px dashed var(--axis); background: transparent; border-radius: 99px; padding: 5px 12px; font-size: 13.5px; color: var(--ink-2); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row .grow { flex: 1; }
+input[type=date], input[type=time] { padding: 6px 8px; border-radius: 10px; border: 1px solid var(--axis); background: var(--page); }
+.savebar { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+.savebar .primary { flex: 1; font-size: 17px; padding: 14px; }
+.help { border-radius: 16px; padding: 12px 14px; font-size: 13.5px; color: var(--ink-2); background: var(--surface-2); line-height: 1.45; }
+.help b { color: var(--ink); }
+.help.soft { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+.toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--page); padding: 9px 16px; border-radius: 12px; font-size: 14px; z-index: 50; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+
+/* Liste */
+.search { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--axis); background: var(--surface); margin-bottom: 12px; font-size: 16px; }
+.month { font-size: 13px; color: var(--muted); font-weight: 600; margin: 18px 4px 8px; text-transform: uppercase; letter-spacing: .04em; }
+.entry { background: var(--surface); border: 1px solid var(--ring); border-radius: 16px; padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow); }
+.entry .top { display: flex; gap: 10px; align-items: center; }
+.entry .date { font-weight: 600; font-size: 15px; flex: 1; }
+.entry .date span { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 6px; }
+.dots { display: flex; gap: 4px; }
+.dot { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; }
+.entry .txt { color: var(--ink-2); font-size: 14.5px; margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.entry .txt.clip { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.entry .tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-size: 12px; padding: 1px 8px; border-radius: 99px; background: var(--surface-2); color: var(--ink-2); }
+.entry .acts { display: flex; gap: 14px; margin-top: 10px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.empty { color: var(--muted); text-align: center; padding: 30px 0; font-size: 14px; }
+
+/* Verlauf */
+.seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; padding: 5px 10px; border-radius: 8px; font-size: 13px; color: var(--ink-2); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+.stat { background: var(--surface-2); border-radius: 14px; padding: 10px 12px; }
+.stat .l { font-size: 12px; color: var(--ink-2); }
+.stat .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.chart { height: 200px; position: relative; }
+.chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.tick { fill: var(--muted); font-size: 11px; }
+.gl { stroke: var(--grid); }
+.tbar { display: grid; grid-template-columns: 110px 1fr 70px; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 6px; }
+.tbar .b { height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; }
+.tbar .b div { height: 100%; border-radius: 5px; }
+.tbar .v { text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 13px; }
+
+/* Navigation */
+nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--ring); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); }
+nav button { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11.5px; color: var(--muted); padding: 4px 18px; border-radius: 12px; }
+nav button svg { width: 24px; height: 24px; }
+nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--critical); color: #fff; font-size: 11px; display: inline-grid; place-items: center; }
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <form id="lockform" autocomplete="on">
+    <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h9a3 3 0 0 1 3 3v13H9a2 2 0 0 1-2-2z"/><path d="M11 9h5M11 13h3"/></svg></div>
+    <h1>Tagebuch</h1>
+    <div class="sub" id="lockSub">Privat und verschlüsselt. Zum Öffnen Tagebuch-Passwort eingeben.</div>
+    <input type="text" name="username" value="tagebuch" autocomplete="username" hidden>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Tagebuch-Passwort" required>
+    <label class="check" style="margin-bottom:14px"><input id="remember" type="checkbox" checked> Auf diesem Gerät merken</label>
+    <button class="primary" type="submit" id="unlockbtn">Öffnen</button>
+    <div class="err" id="err" role="alert"></div>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <div class="wrap">
+    <header>
+      <h1 id="title">Schreiben</h1>
+      <span class="pill" id="status">bereit</span>
+      <button class="ghost" id="lockBtn">Sperren</button>
+    </header>
+
+    <!-- Schreiben -->
+    <section data-tab="write">
+      <div class="card">
+        <h2 id="formTitle">Wie geht es dir?</h2><div class="sub" id="formSub">Kurzer Check-in, der Text ist freiwillig.</div>
+        <div class="row" style="margin-top:10px"><input type="date" id="fDate" aria-label="Datum"><input type="time" id="fTime" aria-label="Uhrzeit"></div>
+
+        <div class="q">Stimmung <span id="lMood"></span></div>
+        <div class="scale" id="sMood"></div>
+        <div class="ends"><span>sehr schlecht</span><span>sehr gut</span></div>
+
+        <div class="q">Energie <span id="lEnergy"></span></div>
+        <div class="scale" id="sEnergy"></div>
+        <div class="ends"><span>leer</span><span>voller Energie</span></div>
+
+        <div class="q">Anspannung <span id="lTension"></span></div>
+        <div class="scale" id="sTension"></div>
+        <div class="ends"><span>entspannt</span><span>sehr angespannt</span></div>
+
+        <div class="q">Was hat den Tag geprägt? <span>mehrere möglich</span></div>
+        <div class="chips" id="tagChips"></div>
+        <div class="addtag"><input id="newTag" placeholder="Eigenes Stichwort" maxlength="30"><button class="ghost" id="addTagBtn" type="button">+</button></div>
+
+        <div class="q">Gedanken <span>freiwillig</span></div>
+        <div class="prompts" id="prompts"></div>
+        <textarea id="fText" placeholder="Was beschäftigt dich? Was war gut, was schwer?"></textarea>
+
+        <div class="savebar">
+          <button class="ghost" id="cancelEdit" hidden>Abbrechen</button>
+          <button class="primary" id="saveBtn">Speichern</button>
+        </div>
+      </div>
+      <div class="help" id="helpBox">Wenn es dir gerade nicht gut geht, rede mit jemandem. <b>Die Dargebotene Hand: Telefon 143</b> (rund um die Uhr, auch Chat auf 143.ch). Im Notfall: <b>144</b>.</div>
+    </section>
+
+    <!-- Einträge -->
+    <section data-tab="list" hidden>
+      <input class="search" id="search" type="search" placeholder="Suchen in Text und Stichworten">
+      <div id="entries"></div>
+    </section>
+
+    <!-- Verlauf -->
+    <section data-tab="trend" hidden>
+      <div class="card">
+        <div class="row"><h3 class="grow" style="margin:0">Verlauf</h3>
+          <div class="seg" id="tRange"><button data-d="30" aria-pressed="true">30 T.</button><button data-d="90">90 T.</button><button data-d="365">1 J.</button><button data-d="0">Alles</button></div></div>
+        <div class="stats" id="stats"></div>
+        <div class="chart" id="chart"></div>
+        <div class="legend"><span><i style="background:var(--c-mood)"></i>Stimmung</span><span><i style="background:var(--c-energy)"></i>Energie</span><span><i style="background:var(--c-tension)"></i>Anspannung</span></div>
+      </div>
+      <div class="card"><h3>Stichworte und Stimmung</h3><div class="sub" style="margin:-6px 0 10px">Ø Stimmung an Tagen mit diesem Stichwort</div><div id="tagStats"></div></div>
+      <div class="card"><h3>Wochentage</h3><div id="wdStats"></div></div>
+    </section>
+  </div>
+
+  <nav id="nav" aria-label="Bereiche">
+    <button data-tab="write" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Schreiben</button>
+    <button data-tab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h9a3 3 0 0 1 3 3v13H9a2 2 0 0 1-2-2z"/><path d="M11 9h5M11 13h3"/></svg>Einträge</button>
+    <button data-tab="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M3 21h18"/></svg>Verlauf</button>
+  </nav>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+const K_KEY = "tb_key_v1", K_CACHE = "tb_cache_v1", K_QUEUE = "tb_queue_v1", K_DRAFT = "tb_draft_v1";
+let KEY = null, CFG = null, ENTRIES = new Map(), EDIT = null;
+
+// ============================================================ Krypto (kompatibel mit tagebuch.py)
+const b64 = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+}
+async function enc(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, KEY, new TextEncoder().encode(JSON.stringify(obj))));
+  return { v: 1, iv: b64(iv), ct: b64(ct) };
+}
+async function dec(o, key = KEY) {
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(o.iv) }, key, unb64(o.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+// ============================================================ GitHub
+async function gh(method, path, body) {
+  const r = await fetch(`https://api.github.com/repos/${CFG.repo}${path}`, {
+    method, cache: "no-store",
+    headers: { Authorization: `Bearer ${CFG.token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(body ? { "Content-Type": "application/json" } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (r.status === 401) throw new Error("Zugang abgelaufen. Auf dem Laptop Tagebuch_einrichten.bat starten.");
+  return r;
+}
+async function listRemote() {
+  const r = await gh("GET", `/git/trees/${CFG.branch}?recursive=1`);
+  if (r.status === 404 || r.status === 409) return [];
+  if (!r.ok) throw new Error("GitHub antwortet nicht (" + r.status + ")");
+  return (await r.json()).tree.filter(x => x.type === "blob" && x.path.startsWith("eintraege/") && x.path.endsWith(".json"));
+}
+async function blob(sha) {
+  const r = await gh("GET", `/git/blobs/${sha}`);
+  if (!r.ok) throw new Error("Eintrag nicht lesbar (" + r.status + ")");
+  const j = await r.json();
+  return JSON.parse(new TextDecoder().decode(unb64(j.content.replace(/\n/g, ""))));
+}
+async function putFile(path, encObj, sha) {
+  const body = { message: "Eintrag", content: btoa(JSON.stringify(encObj)), branch: CFG.branch };
+  if (sha) body.sha = sha;
+  let r = await gh("PUT", `/contents/${path}`, body);
+  if (r.status === 409 || r.status === 422) {          // sha veraltet -> aktuellen holen und nochmals
+    const cur = await gh("GET", `/contents/${path}?ref=${CFG.branch}`);
+    if (cur.ok) { body.sha = (await cur.json()).sha; r = await gh("PUT", `/contents/${path}`, body); }
+  }
+  if (!r.ok) throw new Error("Speichern fehlgeschlagen (" + r.status + ")");
+  return (await r.json()).content.sha;
+}
+async function delFile(path, sha) {
+  const r = await gh("DELETE", `/contents/${path}`, { message: "Eintrag entfernt", sha, branch: CFG.branch });
+  if (!r.ok && r.status !== 404) throw new Error("Löschen fehlgeschlagen (" + r.status + ")");
+}
+
+// ============================================================ Entsperren
+async function fetchAccess() {
+  const r = await fetch("zugang.enc.json?" + Date.now(), { cache: "no-store" });
+  if (r.status === 404) throw new Error("Noch nicht eingerichtet: auf dem Laptop Tagebuch_einrichten.bat starten.");
+  if (!r.ok) throw new Error("Zugang nicht ladbar (" + r.status + ")");
+  return r.json();
+}
+async function openWith(key, access) {
+  CFG = await dec(access, key);
+  KEY = key;
+  $("lock").hidden = true; $("app").hidden = false;
+  initForm();
+  await loadEntries();
+}
+$("lockform").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  $("err").textContent = ""; $("unlockbtn").disabled = true; $("unlockbtn").textContent = "Öffne …";
+  try {
+    const access = await fetchAccess();
+    const key = await deriveKey($("pw").value, unb64(access.salt), access.iter);
+    await openWith(key, access);
+    if ($("remember").checked) ls.set(K_KEY, b64(new Uint8Array(await crypto.subtle.exportKey("raw", key))));
+    $("pw").value = "";
+  } catch (e) {
+    $("err").textContent = e.name === "OperationError" ? "Passwort falsch." : (e.message || "Fehler beim Öffnen.");
+  } finally { $("unlockbtn").disabled = false; $("unlockbtn").textContent = "Öffnen"; }
+});
+async function autoUnlock() {
+  const raw = ls.get(K_KEY); if (!raw) return;
+  try {
+    const access = await fetchAccess();
+    const key = await crypto.subtle.importKey("raw", unb64(raw), "AES-GCM", true, ["encrypt", "decrypt"]);
+    await openWith(key, access);
+  } catch (e) {
+    if (e.name === "OperationError") ls.del(K_KEY);
+    else if (!KEY) $("err").textContent = e.message || "";
+  }
+}
+$("lockBtn").addEventListener("click", () => { ls.del(K_KEY); ls.del(K_DRAFT); location.reload(); });
+
+// ============================================================ Laden, Cache, Warteschlange
+// Im Browser-Cache liegen nur VERSCHLÜSSELTE Einträge (spart Datenvolumen).
+function readJSON(k, d) { try { return JSON.parse(ls.get(k) || "null") ?? d; } catch (e) { return d; } }
+function setStatus(txt, cls = "") { const s = $("status"); s.textContent = txt; s.className = "pill " + cls; }
+async function loadEntries() {
+  setStatus("lädt …");
+  const cache = readJSON(K_CACHE, {});
+  try {
+    const remote = await listRemote();
+    const keep = {};
+    const todo = remote.filter(x => !cache[x.sha]);
+    let i = 0;
+    const worker = async () => { while (i < todo.length) { const x = todo[i++]; cache[x.sha] = await blob(x.sha); } };
+    await Promise.all(Array.from({ length: 6 }, worker));
+    ENTRIES = new Map();
+    for (const x of remote) {
+      keep[x.sha] = cache[x.sha];
+      try { const e = await dec(cache[x.sha]); e.path = x.path; e.sha = x.sha; ENTRIES.set(e.id, e); } catch (err) { /* fremde Datei */ }
+    }
+    ls.set(K_CACHE, JSON.stringify(keep));
+    await flushQueue();
+    setStatus(queueLen() ? `${queueLen()} wartet` : "gespeichert", queueLen() ? "warn" : "");
+  } catch (e) {
+    // offline: aus dem Cache anzeigen
+    for (const o of Object.values(cache)) { try { const x = await dec(o); if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
+    setStatus(navigator.onLine ? "Fehler" : "offline", navigator.onLine ? "bad" : "warn");
+    if (navigator.onLine) toast(e.message);
+  }
+  for (const q of readJSON(K_QUEUE, [])) { try { const x = await dec(q.enc); x.pending = true; ENTRIES.set(x.id, x); } catch (e) {} }
+  renderAll();
+}
+const queueLen = () => readJSON(K_QUEUE, []).length;
+async function flushQueue() {
+  let q = readJSON(K_QUEUE, []);
+  while (q.length) {
+    const it = q[0];
+    try {
+      if (it.del) await delFile(it.path, it.sha);
+      else {
+        const cur = ENTRIES.get(it.id);
+        const sha = await putFile(it.path, it.enc, cur && !cur.pending ? cur.sha : it.sha);
+        const e = await dec(it.enc); e.path = it.path; e.sha = sha; ENTRIES.set(e.id, e);
+        const cache = readJSON(K_CACHE, {}); cache[sha] = it.enc; ls.set(K_CACHE, JSON.stringify(cache));
+      }
+      q.shift(); ls.set(K_QUEUE, JSON.stringify(q));
+    } catch (e) { if (e instanceof TypeError) break; throw e; }   // TypeError = kein Netz
+  }
+}
+addEventListener("online", async () => { if (!KEY) return; try { await flushQueue(); setStatus("gespeichert"); renderAll(); } catch (e) {} });
+addEventListener("offline", () => KEY && setStatus("offline", "warn"));
+
+// ============================================================ Formular
+const SCALES = {
+  mood: ["sehr schlecht", "eher schlecht", "okay", "gut", "sehr gut"],
+  energy: ["leer", "müde", "mittel", "gut", "voller Energie"],
+  tension: ["entspannt", "eher ruhig", "mittel", "angespannt", "sehr angespannt"],
+};
+const MCOL = ["--m1", "--m2", "--m3", "--m4", "--m5"];
+const scaleColor = (k, v) => `var(${MCOL[(k === "tension" ? 6 - v : v) - 1]})`;
+const BASE_TAGS = ["Arbeit", "Schule", "Studium", "Sport", "Familie", "Freunde", "Partnerschaft", "Gesundheit", "Schlaf", "Stress", "Natur", "Erfolg", "Erholung", "Alleinzeit"];
+const PROMPTS = [
+  ["Drei gute Dinge", "Drei gute Dinge heute:\n1. \n2. \n3. \n"],
+  ["Gedanken sortieren", "Situation: \nMein Gedanke dazu: \nGefühl (0–10): \nWas spricht dafür / dagegen: \nEine andere Sichtweise: \n"],
+  ["Was war wichtig?", "Was war mir heute wichtig – und habe ich danach gehandelt?\n"],
+  ["Energie", "Was hat mir heute Energie gegeben?\n\nWas hat Energie gekostet?\n"],
+  ["Dankbar", "Wofür bin ich heute dankbar?\n"],
+  ["Morgen", "Was nehme ich mir für morgen vor? (eine kleine Sache)\n"],
+  ["Sorge", "Was macht mir gerade Sorgen?\n\nWas davon kann ich beeinflussen?\n\nWas ist ein kleiner nächster Schritt?\n"],
+];
+let FORM = { mood: null, energy: null, tension: null, tags: new Set() };
+const pad2 = (n) => String(n).padStart(2, "0");
+const isoLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+function drawScale(k) {
+  const box = $("s" + k[0].toUpperCase() + k.slice(1));
+  box.innerHTML = [1, 2, 3, 4, 5].map(v => `<button type="button" data-v="${v}" style="--sc:${scaleColor(k, v)}" aria-pressed="${FORM[k] === v}" aria-label="${SCALES[k][v - 1]}">${v}</button>`).join("");
+  $("l" + k[0].toUpperCase() + k.slice(1)).textContent = FORM[k] ? SCALES[k][FORM[k] - 1] : "";
+  box.onclick = (ev) => { const b = ev.target.closest("button"); if (!b) return; const v = +b.dataset.v; FORM[k] = FORM[k] === v ? null : v; drawScale(k); saveDraft(); };
+}
+function allTags() {
+  const used = new Map();
+  for (const e of ENTRIES.values()) for (const t of e.tags || []) used.set(t, (used.get(t) || 0) + 1);
+  const extra = [...used.entries()].filter(([t]) => !BASE_TAGS.includes(t)).sort((a, b) => b[1] - a[1]).map(([t]) => t);
+  return [...BASE_TAGS, ...extra, ...[...FORM.tags].filter(t => !BASE_TAGS.includes(t) && !extra.includes(t))];
+}
+function drawTags() {
+  $("tagChips").innerHTML = allTags().map(t => `<button type="button" aria-pressed="${FORM.tags.has(t)}">${esc(t)}</button>`).join("");
+}
+$("tagChips").addEventListener("click", (ev) => { const b = ev.target.closest("button"); if (!b) return; const t = b.textContent; FORM.tags.has(t) ? FORM.tags.delete(t) : FORM.tags.add(t); drawTags(); saveDraft(); });
+function addTag() { const t = $("newTag").value.trim().replace(/\s+/g, " "); if (!t) return; FORM.tags.add(t); $("newTag").value = ""; drawTags(); saveDraft(); }
+$("addTagBtn").addEventListener("click", addTag);
+$("newTag").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); addTag(); } });
+$("prompts").innerHTML = PROMPTS.map(([n], i) => `<button type="button" data-i="${i}">+ ${n}</button>`).join("");
+$("prompts").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const ta = $("fText"); const add = PROMPTS[+b.dataset.i][1];
+  ta.value = ta.value.trim() ? ta.value.replace(/\s*$/, "\n\n") + add : add;
+  ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; saveDraft();
+});
+$("fText").addEventListener("input", () => saveDraft());
+function resetForm(e) {
+  const now = new Date();
+  EDIT = e || null;
+  FORM = { mood: e?.mood ?? null, energy: e?.energy ?? null, tension: e?.tension ?? null, tags: new Set(e?.tags || []) };
+  $("fDate").value = e?.d || isoLocal(now);
+  $("fTime").value = e?.t || `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+  $("fText").value = e?.text || "";
+  $("formTitle").textContent = e ? "Eintrag bearbeiten" : "Wie geht es dir?";
+  $("formSub").textContent = e ? "Änderungen werden verschlüsselt gespeichert." : "Kurzer Check-in, der Text ist freiwillig.";
+  $("cancelEdit").hidden = !e;
+  ["mood", "energy", "tension"].forEach(drawScale); drawTags();
+}
+function initForm() {
+  resetForm();
+  restoreDraft();
+}
+// Entwurf (verschlüsselt) im Browser, falls die Seite zugeht
+let draftT;
+function saveDraft() {
+  if (EDIT) return;
+  clearTimeout(draftT);
+  draftT = setTimeout(async () => {
+    const d = { mood: FORM.mood, energy: FORM.energy, tension: FORM.tension, tags: [...FORM.tags], text: $("fText").value };
+    if (!d.mood && !d.energy && !d.tension && !d.tags.length && !d.text.trim()) { ls.del(K_DRAFT); return; }
+    ls.set(K_DRAFT, JSON.stringify(await enc(d)));
+  }, 400);
+}
+async function restoreDraft() {
+  const raw = readJSON(K_DRAFT, null); if (!raw) return;
+  try {
+    const d = await dec(raw);
+    FORM.mood = d.mood; FORM.energy = d.energy; FORM.tension = d.tension; FORM.tags = new Set(d.tags || []);
+    $("fText").value = d.text || "";
+    ["mood", "energy", "tension"].forEach(drawScale); drawTags();
+  } catch (e) { ls.del(K_DRAFT); }
+}
+$("cancelEdit").addEventListener("click", () => { resetForm(); restoreDraft(); });
+$("saveBtn").addEventListener("click", async () => {
+  const text = $("fText").value.trim();
+  if (!FORM.mood && !FORM.energy && !FORM.tension && !text && !FORM.tags.size) { toast("Bitte mindestens etwas ausfüllen."); return; }
+  const nowIso = new Date().toISOString();
+  const id = EDIT ? EDIT.id : b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[+/=]/g, c => ({ "+": "x", "/": "y", "=": "" }[c]));
+  const entry = { v: 1, id, d: $("fDate").value, t: $("fTime").value, mood: FORM.mood, energy: FORM.energy, tension: FORM.tension,
+    tags: [...FORM.tags], text, created: EDIT ? EDIT.created : nowIso, updated: nowIso };
+  const path = EDIT ? EDIT.path || `eintraege/${id}.json` : `eintraege/${id}.json`;
+  const encObj = await enc(entry);
+  $("saveBtn").disabled = true;
+  try {
+    const sha = await putFile(path, encObj, EDIT && !EDIT.pending ? EDIT.sha : undefined);
+    const cache = readJSON(K_CACHE, {}); cache[sha] = encObj; ls.set(K_CACHE, JSON.stringify(cache));
+    ENTRIES.set(id, { ...entry, path, sha });
+    setStatus("gespeichert"); toast("Gespeichert und verschlüsselt ✓");
+  } catch (e) {
+    if (e instanceof TypeError) {    // offline -> später senden
+      const q = readJSON(K_QUEUE, []).filter(x => x.id !== id);
+      q.push({ id, path, enc: encObj, sha: EDIT?.sha });
+      ls.set(K_QUEUE, JSON.stringify(q));
+      ENTRIES.set(id, { ...entry, path, pending: true });
+      setStatus(`${q.length} wartet`, "warn"); toast("Offline – wird gesendet, sobald Internet da ist.");
+    } else { toast(e.message); $("saveBtn").disabled = false; return; }
+  } finally { $("saveBtn").disabled = false; }
+  ls.del(K_DRAFT);
+  const low = entry.mood === 1 || (entry.mood === 2 && entry.tension === 5);
+  resetForm();
+  renderAll();
+  if (low) { $("helpBox").className = "help soft"; $("helpBox").scrollIntoView({ behavior: "smooth", block: "center" }); }
+  else $("helpBox").className = "help";
+});
+
+// ============================================================ Einträge
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+const MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const WD = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+const parseD = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d, 12); };
+const sorted = () => [...ENTRIES.values()].sort((a, b) => (b.d + (b.t || "")).localeCompare(a.d + (a.t || "")));
+const dotHtml = (k, v, label) => v ? `<span class="dot" title="${label}: ${SCALES[k][v - 1]}" style="background:${scaleColor(k, v)}">${v}</span>` : "";
+let openId = null;
+function renderList() {
+  const q = $("search").value.trim().toLowerCase();
+  const list = sorted().filter(e => !q || (e.text || "").toLowerCase().includes(q) || (e.tags || []).some(t => t.toLowerCase().includes(q)));
+  if (!list.length) { $("entries").innerHTML = `<div class="empty">${ENTRIES.size ? "Nichts gefunden." : "Noch keine Einträge. Der erste ist der schwierigste – fang einfach an."}</div>`; return; }
+  let html = "", lastM = "";
+  for (const e of list) {
+    const m = e.d.slice(0, 7);
+    if (m !== lastM) { html += `<div class="month">${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}</div>`; lastM = m; }
+    const d = parseD(e.d), open = openId === e.id;
+    html += `<div class="entry" data-id="${esc(e.id)}"><div class="top"><div class="date">${WD[d.getDay()]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}<span>${esc(e.t || "")}${e.pending ? " · wartet auf Internet" : ""}</span></div>
+      <div class="dots">${dotHtml("mood", e.mood, "Stimmung")}${dotHtml("energy", e.energy, "Energie")}${dotHtml("tension", e.tension, "Anspannung")}</div></div>
+      ${e.text ? `<div class="txt ${open ? "" : "clip"}">${esc(e.text)}</div>` : ""}
+      ${(e.tags || []).length ? `<div class="tags">${e.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>` : ""}
+      ${open ? `<div class="acts"><button class="link" data-act="edit">Bearbeiten</button><button class="link" data-act="del" style="color:var(--critical)">Löschen</button></div>` : ""}</div>`;
+  }
+  $("entries").innerHTML = `<div class="legend" style="margin:0 4px 4px">Zahlen: Stimmung · Energie · Anspannung (1–5), antippen zum Öffnen</div>` + html;
+}
+$("search").addEventListener("input", renderList);
+$("entries").addEventListener("click", async (ev) => {
+  const card = ev.target.closest(".entry"); if (!card) return;
+  const e = ENTRIES.get(card.dataset.id);
+  const act = ev.target.closest("[data-act]")?.dataset.act;
+  if (act === "edit") { resetForm(e); go("write"); return; }
+  if (act === "del") {
+    if (!confirm("Diesen Eintrag wirklich löschen? Auf dem Laptop bleibt eine verschlüsselte Kopie im Ordner _geloescht.")) return;
+    try { if (!e.pending) await delFile(e.path, e.sha); }
+    catch (err) {
+      if (!(err instanceof TypeError)) { toast(err.message); return; }
+      const q = readJSON(K_QUEUE, []); q.push({ id: e.id, path: e.path, sha: e.sha, del: true }); ls.set(K_QUEUE, JSON.stringify(q));
+    }
+    const q2 = readJSON(K_QUEUE, []).filter(x => !(x.id === e.id && !x.del)); ls.set(K_QUEUE, JSON.stringify(q2));
+    ENTRIES.delete(e.id); toast("Gelöscht"); renderAll(); return;
+  }
+  openId = openId === e.id ? null : e.id; renderList();
+});
+
+// ============================================================ Verlauf
+let tDays = 30;
+$("tRange").addEventListener("click", (ev) => { const b = ev.target.closest("button"); if (!b) return; tDays = +b.dataset.d; for (const x of $("tRange").children) x.setAttribute("aria-pressed", x === b); renderTrend(); });
+const avg = (a) => { const v = a.filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
+const f1 = (n) => n == null ? "–" : n.toLocaleString("de-CH", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+function daily(list) {
+  const m = new Map();
+  for (const e of list) { if (!m.has(e.d)) m.set(e.d, []); m.get(e.d).push(e); }
+  return [...m.entries()].sort().map(([d, es]) => ({ d, mood: avg(es.map(e => e.mood)), energy: avg(es.map(e => e.energy)), tension: avg(es.map(e => e.tension)), tags: new Set(es.flatMap(e => e.tags || [])) }));
+}
+function renderTrend() {
+  const from = tDays ? isoLocal(new Date(Date.now() - (tDays - 1) * 864e5)) : "0000";
+  const days = daily([...ENTRIES.values()].filter(e => e.d >= from));
+  $("stats").innerHTML = [["Ø Stimmung", "mood"], ["Ø Energie", "energy"], ["Ø Anspannung", "tension"]]
+    .map(([l, k]) => `<div class="stat"><div class="l">${l}</div><div class="v">${f1(avg(days.map(x => x[k])))}</div></div>`).join("");
+  drawChart(days);
+  // Stichworte
+  const all = avg(days.map(x => x.mood)), tm = new Map();
+  for (const x of days) for (const t of x.tags) { if (x.mood == null) continue; if (!tm.has(t)) tm.set(t, []); tm.get(t).push(x.mood); }
+  const rows = [...tm.entries()].filter(([, v]) => v.length >= 2).map(([t, v]) => [t, avg(v), v.length]).sort((a, b) => b[1] - a[1]);
+  $("tagStats").innerHTML = rows.length ? rows.slice(0, 12).map(([t, v, n]) => `<div class="tbar"><span>${esc(t)}</span><div class="b"><div style="width:${v / 5 * 100}%;background:var(${MCOL[Math.round(v) - 1]})"></div></div><span class="v">${f1(v)} · ${n}×</span></div>`).join("")
+    + (all != null ? `<div class="sub" style="margin-top:8px">Zum Vergleich: Ø an allen Tagen ${f1(all)}. Erscheint ab 2 Tagen pro Stichwort.</div>` : "")
+    : `<div class="empty">Sobald ein Stichwort an mindestens 2 Tagen vorkommt, erscheint es hier.</div>`;
+  // Wochentage
+  const wd = [1, 2, 3, 4, 5, 6, 0].map(w => [WD[w].slice(0, 2), avg(days.filter(x => parseD(x.d).getDay() === w).map(x => x.mood))]);
+  $("wdStats").innerHTML = wd.some(x => x[1] != null) ? wd.map(([n, v]) => `<div class="tbar"><span>${n}</span><div class="b"><div style="width:${(v || 0) / 5 * 100}%;background:var(--c-mood)"></div></div><span class="v">${f1(v)}</span></div>`).join("") : `<div class="empty">Noch zu wenig Einträge.</div>`;
+}
+function drawChart(days) {
+  const box = $("chart");
+  if (days.length < 2) { box.innerHTML = `<div class="empty">Ab zwei Tagen mit Einträgen erscheint hier dein Verlauf.</div>`; return; }
+  const W = box.clientWidth || 320, H = box.clientHeight || 200, L = 22, R = 6, T = 8, B = 20;
+  const t0 = parseD(days[0].d).getTime(), t1 = parseD(days[days.length - 1].d).getTime();
+  const x = (d) => L + (W - L - R) * ((parseD(d).getTime() - t0) / ((t1 - t0) || 1));
+  const y = (v) => T + (H - T - B) * (1 - (v - 1) / 4);
+  let s = `<svg viewBox="0 0 ${W} ${H}">`;
+  for (let v = 1; v <= 5; v++) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" class="tick">${v}</text>`;
+  const fmtD = (d) => `${d.slice(8, 10)}.${d.slice(5, 7)}.`;
+  s += `<text x="${L}" y="${H - 4}" class="tick">${fmtD(days[0].d)}</text><text x="${W - R}" y="${H - 4}" text-anchor="end" class="tick">${fmtD(days[days.length - 1].d)}</text>`;
+  for (const [k, c] of [["tension", "--c-tension"], ["energy", "--c-energy"], ["mood", "--c-mood"]]) {
+    const pts = days.filter(p => p[k] != null);
+    if (!pts.length) continue;
+    s += `<path d="${pts.map((p, i) => `${i ? "L" : "M"}${x(p.d)},${y(p[k])}`).join("")}" fill="none" stroke="var(${c})" stroke-width="${k === "mood" ? 2.6 : 1.6}" stroke-linejoin="round" stroke-linecap="round" opacity="${k === "mood" ? 1 : .8}"/>`;
+    if (pts.length <= 60) s += pts.map(p => `<circle cx="${x(p.d)}" cy="${y(p[k])}" r="${k === "mood" ? 3.2 : 2.2}" fill="var(${c})"/>`).join("");
+  }
+  box.innerHTML = s + "</svg>";
+}
+
+// ============================================================ Navigation
+const TITLES = { write: "Schreiben", list: "Einträge", trend: "Verlauf" };
+let TAB = "write";
+function go(t) {
+  TAB = t;
+  for (const s of document.querySelectorAll("section")) s.hidden = s.dataset.tab !== t;
+  for (const b of $("nav").children) b.dataset.tab === t ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current");
+  $("title").textContent = TITLES[t];
+  renderAll(); scrollTo(0, 0);
+}
+$("nav").addEventListener("click", (ev) => { const b = ev.target.closest("button"); if (b) go(b.dataset.tab); });
+function renderAll() { if (TAB === "list") renderList(); if (TAB === "trend") renderTrend(); if (TAB === "write") drawTags(); }
+let toastT;
+function toast(msg) {
+  let t = document.querySelector(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600);
+}
+addEventListener("resize", () => TAB === "trend" && renderTrend());
+autoUnlock();
+</script>
+</body>
+</html>
