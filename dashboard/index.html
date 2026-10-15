@@ -59,7 +59,7 @@ button { cursor: pointer; }
 label.check { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); margin-bottom: 14px; }
 
 /* ---------- Grundgerüst */
-#app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+#app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
 nav.side { position: sticky; top: 0; height: 100vh; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid var(--ring); }
 .brand { font-weight: 700; font-size: 18px; padding: 4px 10px 16px; display: flex; gap: 10px; align-items: center; }
 .brand .logo { width: 28px; height: 28px; border-radius: 9px; background: linear-gradient(135deg, var(--s2), var(--im)); display: grid; place-items: center; color: #fff; }
@@ -165,6 +165,25 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .tiplegend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--muted); }
 .tiplegend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
 .tips .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
+/* ---------- Info & Technik */
+.sysgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; }
+@media (max-width: 560px) { .sysgrid { grid-template-columns: minmax(0, 1fr); } .sys dl { grid-template-columns: minmax(0, 1fr); gap: 0; } .sys dt { margin-top: 8px; font-size: 12.5px; } }
+.sys dl { display: grid; grid-template-columns: 112px 1fr; gap: 6px 12px; margin: 0; font-size: 14px; }
+.sys dt { color: var(--muted); }
+.sys dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.sys code, .md code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+.sys ul, .md ul, .md ol { margin: 4px 0; padding-left: 18px; }
+.sys li { margin: 2px 0; }
+.md { font-size: 14.5px; line-height: 1.55; max-width: 900px; }
+.md h1 { font-size: 22px; margin: 6px 0 10px; } .md h2 { font-size: 18px; margin: 24px 0 8px; } .md h3 { font-size: 15.5px; margin: 16px 0 6px; }
+.md pre { background: var(--surface-2); border-radius: 10px; padding: 12px; overflow-x: auto; font-size: 12.5px; line-height: 1.45; }
+.md pre code { background: none; padding: 0; }
+.md table { margin: 8px 0; } .md .tw { overflow-x: auto; }
+.md hr { border: 0; border-top: 1px solid var(--grid); margin: 18px 0; }
+details.card > summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 8px; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::after { content: "▸"; margin-left: auto; color: var(--muted); }
+details.card[open] > summary::after { content: "▾"; }
 .empty { color: var(--muted); font-size: 13px; padding: 24px 0; text-align: center; }
 .section-note { color: var(--muted); font-size: 12px; margin: -6px 0 12px; }
 
@@ -233,7 +252,7 @@ nav.bottom { display: none; }
   .c3 { grid-column: span 6; } .c4 { grid-column: span 6; } .c5, .c7 { grid-column: span 12; } .c8 { grid-column: span 12; }
 }
 @media (max-width: 820px) {
-  #app { grid-template-columns: 1fr; }
+  #app { grid-template-columns: minmax(0, 1fr); }
   nav.side { display: none; }
   main { padding: 12px 16px calc(84px + env(safe-area-inset-bottom)); }
   .topbar h1 { font-size: 22px; }
@@ -830,7 +849,7 @@ function bodyPair(fills, titles, small = false) {
 // ================================================================ Navigation
 const TABS = [
   ["ov", "Übersicht", "grid"], ["kraft", "Krafttraining", "dumbbell"], ["health", "Gesundheit", "heart"],
-  ["work", "Arbeitszeit", "briefcase"], ["sync", "Synchronisation", "sync"], ["help", "Handbuch", "book"],
+  ["work", "Arbeitszeit", "briefcase"], ["sync", "Synchronisation", "sync"], ["help", "Info & Technik", "book"],
 ];
 const SHORT = { ov: "Übersicht", kraft: "Kraft", health: "Gesundheit", work: "Arbeit", sync: "Sync" };
 let TAB = (location.hash || "").slice(1);
@@ -1385,15 +1404,20 @@ document.addEventListener("click", (ev) => { const b = ev.target.closest("[data-
 $("alerts").addEventListener("click", (ev) => { const b = ev.target.closest("[data-go]"); if (!b) return; TAB = b.dataset.go; history.replaceState(null, "", "#" + TAB); render(); });
 
 // ---------------------------------------------------------------- Handbuch (kommt verschlüsselt mit den Daten)
+let helpView = "me";
 function renderHelp() {
   const S = sec("help");
+  const seg = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px"><div class="seg" id="helpSeg">
+    <button data-v="me" aria-pressed="${helpView === "me"}">Für mich</button><button data-v="tech" aria-pressed="${helpView === "tech"}">Technik (Mensch &amp; KI)</button></div>
+    <span class="muted">Liegt verschlüsselt hier und als Datei im Ordner skripte</span></div>`;
+  if (helpView === "tech") { S.dataset.loaded = ""; S.innerHTML = seg + techHtml(); bindHelp(S); return; }
   if (!DATA.handbuch) { S.innerHTML = `<div class="card"><div class="empty">Das Handbuch kommt mit dem nächsten Abgleich.</div></div>`; return; }
   if (S.dataset.loaded === "1" && S.dataset.theme === (document.documentElement.getAttribute("data-theme") || "")) return;
   const th = document.documentElement.getAttribute("data-theme");
   // fremde Schriften weglassen (Dashboard lädt bewusst nichts von aussen)
   let html = DATA.handbuch.replace(/<link[^>]+fonts\.(googleapis|gstatic)\.com[^>]*>/g, "");
   if (th) html = html.replace('<html lang="de">', `<html lang="de" data-theme="${th}">`);
-  S.innerHTML = `<iframe id="helpFrame" title="Handbuch" style="width:100%;border:0;border-radius:18px;min-height:70vh;display:block;background:var(--surface)"></iframe>`;
+  S.innerHTML = seg + `<iframe id="helpFrame" title="Handbuch" style="width:100%;border:0;border-radius:18px;min-height:70vh;display:block;background:var(--surface)"></iframe>`;
   const f = $("helpFrame");
   f.addEventListener("load", () => {
     const fit = () => { try { f.style.height = f.contentDocument.documentElement.scrollHeight + "px"; } catch (e) {} };
@@ -1402,6 +1426,82 @@ function renderHelp() {
   });
   f.srcdoc = html;
   S.dataset.loaded = "1"; S.dataset.theme = th || "";
+  bindHelp(S);
+}
+function bindHelp(S) {
+  $("helpSeg").onclick = (ev) => { const b = ev.target.closest("button"); if (!b) return; helpView = b.dataset.v; S.dataset.loaded = ""; renderHelp(); };
+  S.querySelectorAll("[data-copy]").forEach(b => b.onclick = () => {
+    const txt = b.dataset.copy === "system" ? JSON.stringify(DATA.system, null, 2) : (DATA.infoblatt || "");
+    const done = () => { const o = b.textContent; b.textContent = "Kopiert ✓"; setTimeout(() => b.textContent = o, 1500); };
+    const fb = () => { const t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); done(); } catch (e) {} t.remove(); };
+    try { navigator.clipboard.writeText(txt).then(done, fb); } catch (e) { fb(); }
+  });
+}
+// Kleines Markdown → HTML (für UEBERSICHT.md, ohne fremde Bibliothek)
+function mdToHtml(md) {
+  const inline = (t) => esc(t).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const lines = md.replace(/\r/g, "").split("\n"); let out = "", i = 0;
+  while (i < lines.length) {
+    const l = lines[i];
+    if (/^```/.test(l)) { let b = ""; i++; while (i < lines.length && !/^```/.test(lines[i])) b += lines[i++] + "\n"; i++; out += `<pre><code>${esc(b)}</code></pre>`; continue; }
+    const h = l.match(/^(#{1,4})\s+(.*)/); if (h) { out += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`; i++; continue; }
+    if (/^---+\s*$/.test(l)) { out += "<hr>"; i++; continue; }
+    if (/^\|/.test(l)) {
+      const rows = []; while (i < lines.length && /^\|/.test(lines[i])) rows.push(lines[i++]);
+      const cells = (r) => r.replace(/^\||\|\s*$/g, "").split("|").map(c => c.trim());
+      const body = rows.filter((r, k) => !(k === 1 && /^\|[\s:|-]+\|?\s*$/.test(r)));
+      out += `<div class="tw"><table><thead><tr>${cells(body[0]).map(c => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${body.slice(1).map(r => `<tr>${cells(r).map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      continue;
+    }
+    if (/^\s*([-*]|\d+\.)\s+/.test(l)) {
+      const ordered = /^\s*\d+\./.test(l); let items = [];
+      while (i < lines.length && (/^\s*([-*]|\d+\.)\s+/.test(lines[i]) || (/^\s{2,}\S/.test(lines[i]) && items.length))) {
+        if (/^\s*([-*]|\d+\.)\s+/.test(lines[i])) items.push(lines[i].replace(/^\s*([-*]|\d+\.)\s+/, "")); else items[items.length - 1] += " " + lines[i].trim();
+        i++;
+      }
+      out += `<${ordered ? "ol" : "ul"}>${items.map(x => `<li>${inline(x)}</li>`).join("")}</${ordered ? "ol" : "ul"}>`; continue;
+    }
+    if (!l.trim()) { i++; continue; }
+    let para = l; i++;
+    while (i < lines.length && lines[i].trim() && !/^(#|```|\||---|\s*([-*]|\d+\.)\s)/.test(lines[i])) para += " " + lines[i++].trim();
+    out += `<p>${inline(para)}</p>`;
+  }
+  return out;
+}
+function techHtml() {
+  const S = DATA.system;
+  if (!S) return `<div class="card"><div class="empty">Die Systemkarte kommt mit dem nächsten Abgleich.</div></div>`;
+  const val = (v) => Array.isArray(v) ? `<ul>${v.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : esc(v);
+  const expPill = (t) => { if (!t) return ""; const c = /^ja/.test(t) ? "warn" : "ok"; return `<span class="status ${c}"><span class="dot"></span></span> ${esc(t)}`; };
+  const td = tokenDays();
+  const rows = (d) => [["Was", d.was], ["Schnittstelle", d.schnittstelle], ["Repository", d.repository], ["Adresse", d.adresse], ["Dateien", d.dateien],
+    ["Zugang", d.zugang], ["Liegt in", d.zugang_ort], ["Läuft ab", d.laeuft_ab ? { html: expPill(d.laeuft_ab) + (d.name === "GitHub – Website" && DATA.status.tokenExpires ? ` <span class="muted">(laut GitHub: ${dd(DATA.status.tokenExpires.slice(0, 10))}${td != null ? `, noch ${td} Tage` : ""})</span>` : "") } : null],
+    ["Erneuern", d.erneuern], ["Code", d.code], ["Ziel", d.ziel], ["Kopie", d.kopie], ["Datenschutz", d.datenschutz], ["Risiko", d.risiko], ["Achtung", d.achtung]]
+    .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${v && v.html ? v.html : val(v)}</dd>`).join("");
+  const V = S.verschluesselung || {};
+  return `
+    <div class="card sys" style="margin-bottom:14px"><div class="ch">${icBox("book", "--s1")}<h3>Systemkarte</h3><span class="right">Stand ${esc(S.stand || "")}</span></div>
+      <p class="muted" style="margin:0 0 12px">${esc(S._hinweis || "")}</p>
+      <dl><dt>Code</dt><dd><code>${esc(S.code_ordner)}</code></dd><dt>Daten Laptop</dt><dd><code>${esc(S.daten_ordner_laptop)}</code></dd>
+        <dt>Python</dt><dd>${esc(S.python)}</dd><dt>Tresor</dt><dd>${esc(S.tresor)}</dd></dl>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="ghost" data-copy="system">Systemkarte kopieren (JSON)</button><button class="ghost" data-copy="infoblatt">Infoblatt kopieren (für eine KI)</button></div>
+    </div>
+    <h3 style="margin:22px 0 10px;font-size:16px">Was automatisch läuft</h3>
+    <div class="sysgrid">${(S.zeitplaene || []).map(z => `<div class="card sys"><div class="ch">${icBox("clock", "--s1")}<h3>${esc(z.name)}</h3></div>
+      <dl><dt>Wann</dt><dd>${esc(z.wann)}</dd><dt>Startet</dt><dd><code>${esc(z.startet)}</code></dd><dt>Ablauf</dt><dd><ol style="margin:0;padding-left:18px">${z.schritte.map(x => `<li>${esc(x)}</li>`).join("")}</ol></dd></dl></div>`).join("")}</div>
+    <h3 style="margin:22px 0 10px;font-size:16px">Dienste, Zugänge und Tokens</h3>
+    <div class="sysgrid">${(S.dienste || []).map(d => `<div class="card sys"><div class="ch">${icBox(/GitHub/.test(d.name) ? "sync" : /Garmin/.test(d.name) ? "heart" : /Speediance/.test(d.name) ? "dumbbell" : /Clockify/.test(d.name) ? "briefcase" : /LM Studio/.test(d.name) ? "bolt" : "grid", "--s1")}<h3>${esc(d.name)}</h3></div><dl>${rows(d)}</dl></div>`).join("")}</div>
+    <h3 style="margin:22px 0 10px;font-size:16px">Verschlüsselung und Warnungen</h3>
+    <div class="sysgrid">
+      <div class="card sys"><dl><dt>Verfahren</dt><dd>${esc(V.verfahren)}</dd>
+        <dt>Dashboard</dt><dd>Passwort: ${esc(V.dashboard?.passwort)}<br>Salt: <code>${esc(V.dashboard?.salt)}</code><br>Entschlüsselt: ${esc(V.dashboard?.entschluesselt)}</dd>
+        <dt>Tagebuch</dt><dd>Passwort: ${esc(V.tagebuch?.passwort)}<br>Salt: ${esc(V.tagebuch?.salt)}<br>Entschlüsselt: ${esc(V.tagebuch?.entschluesselt)}</dd>
+        <dt>Im Dashboard</dt><dd>${esc(V.im_dashboard_vom_tagebuch)}</dd></dl></div>
+      <div class="card sys"><dl><dt>Windows</dt><dd>${esc(S.warnungen?.windows_meldung)}</dd><dt>Dashboard</dt><dd>${esc(S.warnungen?.dashboard)}</dd></dl>
+        <h3 style="margin:14px 0 6px">Regeln für eine KI</h3><ol style="margin:0;padding-left:18px;font-size:14px">${(S.regeln_fuer_ki || []).map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
+    </div>
+    ${DATA.infoblatt ? `<details class="card" style="margin-top:14px"><summary>${icBox("book", "--s1")}Ausführliches Infoblatt (UEBERSICHT.md)</summary><div class="md" style="margin-top:12px">${mdToHtml(DATA.infoblatt)}</div></details>` : ""}`;
 }
 
 // ---------------------------------------------------------------- Synchronisation
@@ -1436,8 +1536,8 @@ function renderSync() {
         const v = td == null ? "–" : `<span class="status ${cls}"><span class="dot"></span>${td < 0 ? "abgelaufen" : td > 60 ? "noch " + Math.round(td / 30.4) + " Mt." : "noch " + td + " Tage"}</span>`;
         return tile("GitHub-Token", v, e ? "läuft ab am " + dd(e.slice(0, 10)) : "wird beim nächsten Upload gelesen"); })()}
     </div>
-    <div class="card" style="margin-bottom:14px"><div class="ch">${icBox("book", "--s1")}<h3>Wie funktioniert das alles?</h3><span class="right"><button class="ghost" data-goto="help">Handbuch öffnen</button></span></div>
-      <div class="muted">Bausteine, Datenfluss, Startdateien, Logins und was zu tun ist, wenn etwas klemmt.</div></div>
+    <div class="card" style="margin-bottom:14px"><div class="ch">${icBox("book", "--s1")}<h3>Wie funktioniert das alles?</h3><span class="right"><button class="ghost" data-goto="help">Info &amp; Technik öffnen</button></span></div>
+      <div class="muted">Handbuch für dich und Systemkarte für Technik und KI: Garmin, Speediance, Clockify, GitHub, Tokens, Verschlüsselung.</div></div>
     <div class="card"><div class="ch">${icBox("sync", "--s1")}<h3>Letzte Läufe</h3><span class="right">alle 3 Std., solange der Laptop läuft</span></div>
       <div class="tablewrap"><table><thead><tr><th>Zeitpunkt</th><th>Dauer</th><th>Speediance → Garmin</th><th>Garmin-Sicherung</th><th>Clockify</th><th>Status</th></tr></thead>
       <tbody>${rows || `<tr><td colspan="6" class="empty">Noch keine Läufe protokolliert.</td></tr>`}</tbody></table></div></div>`;
