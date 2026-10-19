@@ -162,6 +162,14 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .tip-i .cat { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
 .tip-i .per { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tip-i .per svg { width: 12px; height: 12px; flex: none; }
+.tip-i .tb { min-width: 0; flex: 1; }
+.life { margin-top: 9px; }
+.life .lbar { height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--tc) 18%, transparent); overflow: hidden; }
+.life .lbar i { display: block; height: 100%; border-radius: 3px; background: var(--tc); }
+.life.open .lbar i { background: linear-gradient(90deg, var(--tc) 70%, transparent); }
+.life .lt { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.life .lt span:first-child { white-space: nowrap; }
+.life .lt span:last-child { text-align: right; }
 .tiplegend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--muted); }
 .tiplegend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
 .tips .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
@@ -902,8 +910,11 @@ function show() {
 // Grundlage: die letzten 7 Tage mit Daten (nicht "heute"), verglichen mit den 4 Wochen davor.
 // So stimmen die Hinweise auch, wenn der Laptop ein paar Tage aus war.
 let tipsOpen = false;
-function tipsCompute() {
-  const D = DATA, H = D.health || [], TR = D.training || [], W = D.work || [], A = D.activities || [];
+// asOf: Hinweise so berechnen, als wären nur Daten bis zu diesem Tag da (für „erschienen am“)
+function tipsCompute(asOf) {
+  const cut = (arr) => asOf ? (arr || []).filter(x => x.d <= asOf) : (arr || []);
+  const D = { health: cut(DATA.health), training: cut(DATA.training), work: cut(DATA.work), activities: cut(DATA.activities), mood: cut(DATA.mood) };
+  const H = D.health, TR = D.training, W = D.work, A = D.activities;
   const lastH = H.length ? H[H.length - 1].d : null;
   const end = [lastH, TR.length && TR[TR.length - 1].d, W.length && W[W.length - 1].d].filter(Boolean).sort().pop() || todayIso();
   const from7 = addDays(end, -6), fromB = addDays(end, -34), toB = addDays(end, -7);
@@ -912,7 +923,10 @@ function tipsCompute() {
   const a7 = (k) => avg(h7.map(x => x[k])), aB = (k) => avg(hB.map(x => x[k]));
   const out = [];
   // per: [von, bis] des Zeitraums, cmp: true = verglichen mit den 4 Wochen davor
-  const T = (prio, cat, icon, tone, title, why, per = [from7, end], cmp = false) => out.push({ prio, cat, icon, tone, title, why, per, cmp });
+  // until: wann der Hinweis spätestens verschwindet – { d: Datum } oder { t: "bis zum nächsten …" }.
+  //        Standard: wenn der ausgewertete Zeitraum ganz vorbei ist (bis + Länge des Zeitraums).
+  const T = (prio, cat, icon, tone, title, why, per = [from7, end], cmp = false, until) => out.push({ prio, cat, icon, tone, title, why, per, cmp,
+    until: until || { d: addDays(per[1], daysBetween(per[0], per[1]) + 1) } });
   const last3From = addDays(end, -2), d14 = addDays(end, -13), d30 = addDays(end, -29), d60 = addDays(end, -60);
   const GOOD = "--good", WARN = "--s4", INFO = "--s1", BAD = "--critical";
   const sinceDays = (d) => d ? daysBetween(d, end) : null;
@@ -961,12 +975,12 @@ function tipsCompute() {
   else if (h7.length >= 5 && im >= imGoal) T(24, "Cardio", "bolt", GOOD, "Wochenziel Intensitätsminuten erreicht.", `${fmt(im)} von ${fmt(imGoal)} Minuten.`);
   const cardio = A.filter(x => /run|cycl|bik|hik|swim|walk|row|ski|cardio/.test(x.type || "")).map(x => x.d).sort().pop();
   const dc = sinceDays(cardio);
-  if (dc != null && dc >= 8) T(48, "Cardio", "run", INFO, `Seit ${dc} Tagen keine Ausdauereinheit.`, "Laufen, Velo oder Rudern am Gym Monster – eine lockere Einheit würde guttun.", [cardio, end]);
+  if (dc != null && dc >= 8) T(48, "Cardio", "run", INFO, `Seit ${dc} Tagen keine Ausdauereinheit.`, "Laufen, Velo oder Rudern am Gym Monster – eine lockere Einheit würde guttun.", [cardio, end], false, { t: "bis zur nächsten Ausdauereinheit" });
 
   // ---------- Krafttraining
   const lastTr = TR.length ? TR[TR.length - 1].d : null, dt = sinceDays(lastTr);
   const tr7 = win(TR, from7, end);
-  if (dt != null && dt >= 5) T(70, "Krafttraining", "dumbbell", WARN, `Seit ${dt} Tagen kein Krafttraining.`, "Plane diese Woche eine Einheit am Gym Monster ein.", [lastTr, end]);
+  if (dt != null && dt >= 5) T(70, "Krafttraining", "dumbbell", WARN, `Seit ${dt} Tagen kein Krafttraining.`, "Plane diese Woche eine Einheit am Gym Monster ein.", [lastTr, end], false, { t: "bis zum nächsten Krafttraining" });
   const GROUPS = { Beine: ["quads", "hamstrings", "glutes", "calves", "adductors"], Rücken: ["lats", "upperback", "lowerback", "traps"],
     "Brust und Schultern": ["chest", "shoulders"], Arme: ["biceps", "triceps", "forearms"], Rumpf: ["abs", "obliques"] };
   const tr60 = win(TR, addDays(end, -60), end), gaps = [];
@@ -978,7 +992,7 @@ function tipsCompute() {
   if (gaps.length && (dt == null || dt < 14)) {
     const [g, ds] = gaps.sort((a, b) => (b[1] ?? 99) - (a[1] ?? 99))[0];
     T(57, "Krafttraining", "dumbbell", INFO, `${g} ${ds == null ? "seit über 2 Monaten" : `seit ${ds} Tagen`} nicht trainiert.`,
-      gaps.length > 1 ? `Ebenfalls länger nicht dran: ${gaps.slice(1).map(x => x[0]).join(", ")}.` : "Nimm sie ins nächste Training auf.", [d60, end]);
+      gaps.length > 1 ? `Ebenfalls länger nicht dran: ${gaps.slice(1).map(x => x[0]).join(", ")}.` : "Nimm sie ins nächste Training auf.", [d60, end], false, { t: `bis du ${g} trainierst` });
   }
   if (tr7.length >= 5 && bb3 != null && bbB != null && bb3 < bbB - 5) T(62, "Krafttraining", "dumbbell", WARN, "Achte auf genügend Regeneration.", `${tr7.length} Krafteinheiten in 7 Tagen, Body Battery tiefer als üblich.`, undefined, true);
   else if (tr7.length >= 3) T(23, "Krafttraining", "dumbbell", GOOD, `${tr7.length} Krafttrainings in den letzten 7 Tagen.`, "Starke Woche – behalte den Rhythmus bei.");
@@ -989,12 +1003,12 @@ function tipsCompute() {
   let streak = 0; for (let d = end; wDays.includes(d); d = addDays(d, -1)) streak++;
   if (hours7 > 45) T(72, "Arbeit", "briefcase", WARN, `${fmt(hours7, 1)} Stunden in 7 Tagen gearbeitet.`, "Das ist viel. Halte dir bewusst freie Zeit frei, idealerweise einen ganzen Tag.");
   else if (hours7 > 42) T(52, "Arbeit", "briefcase", INFO, `${fmt(hours7, 1)} Stunden in 7 Tagen gearbeitet.`, "Eine volle Woche – plane die Erholung gleich mit ein.");
-  if (streak >= 10) T(70, "Arbeit", "briefcase", WARN, `Seit ${streak} Tagen ohne freien Tag.`, "Ein arbeitsfreier Tag hilft, langfristig leistungsfähig zu bleiben.", [addDays(end, -(streak - 1)), end]);
+  if (streak >= 10) T(70, "Arbeit", "briefcase", WARN, `Seit ${streak} Tagen ohne freien Tag.`, "Ein arbeitsfreier Tag hilft, langfristig leistungsfähig zu bleiben.", [addDays(end, -(streak - 1)), end], false, { t: "bis zum nächsten freien Tag" });
   const late = win(W, addDays(end, -13), end).filter(x => x.end && x.end >= "21:00");
   if (late.length >= 3) T(50, "Arbeit", "clock", INFO, `An ${late.length} Abenden nach 21 Uhr gearbeitet.`, "Späte Arbeit verschiebt oft auch den Schlaf. Setz dir eine feste Feierabend-Zeit.", [d14, end]);
   const lastSat = (() => { let d = end; while (parse(d).getDay() !== 6) d = addDays(d, -1); return d; })();
   if (wDays.includes(lastSat) && wDays.includes(addDays(lastSat, 1)) && sum(W.filter(x => x.d === lastSat || x.d === addDays(lastSat, 1)).map(x => x.h)) >= 2)
-    T(45, "Arbeit", "briefcase", INFO, "Am letzten Wochenende an beiden Tagen gearbeitet.", "Versuch, mindestens einen Wochenendtag ganz frei zu halten.", [lastSat, addDays(lastSat, 1)]);
+    T(45, "Arbeit", "briefcase", INFO, "Am letzten Wochenende an beiden Tagen gearbeitet.", "Versuch, mindestens einen Wochenendtag ganz frei zu halten.", [lastSat, addDays(lastSat, 1)], false, { d: addDays(lastSat, 7) });
   const m30 = win(W, addDays(end, -29), end), tot30 = sum(m30.map(x => x.h));
   if (tot30 > 20) {
     const pm = new Map(); for (const x of m30) pm.set(x.p, (pm.get(x.p) || 0) + x.h);
@@ -1006,7 +1020,7 @@ function tipsCompute() {
   const mm7 = avg(m7.map(x => x.m)), mmB = avg(mB.map(x => x.m)), ma7 = avg(m7.map(x => x.a)), maB = avg(mB.map(x => x.a));
   const lastMood = MD.slice(-3);
   if (lastMood.length === 3 && lastMood.every(x => x.m != null && x.m <= 2) && daysBetween(lastMood[0].d, end) <= 6)
-    T(90, "Stimmung", "smile", BAD, "Mehrere schwere Tage hintereinander.", "Deine letzten drei Einträge lagen bei 2 oder tiefer. Sprich mit jemandem, dem du vertraust – oder ruf an: Die Dargebotene Hand, Telefon 143.", [lastMood[0].d, lastMood[2].d]);
+    T(90, "Stimmung", "smile", BAD, "Mehrere schwere Tage hintereinander.", "Deine letzten drei Einträge lagen bei 2 oder tiefer. Sprich mit jemandem, dem du vertraust – oder ruf an: Die Dargebotene Hand, Telefon 143.", [lastMood[0].d, lastMood[2].d], false, { t: "bis zu einem besseren Eintrag" });
   else if (m7.length >= 3 && mmB != null && mB.length >= 5 && mm7 <= mmB - 0.7)
     T(63, "Stimmung", "smile", WARN, "Deine Stimmung war diese Woche tiefer als üblich.", `Ø ${fmt(mm7, 1)} statt ${fmt(mmB, 1)}. Was hat dir sonst gutgetan? Vielleicht lohnt sich ein Blick ins Tagebuch.`, undefined, true);
   else if (m7.length >= 3 && mmB != null && mB.length >= 5 && mm7 >= mmB + 0.5)
@@ -1032,7 +1046,7 @@ function tipsCompute() {
     const dA = diff(x => A.some(a => a.d === x.d && !/yoga|pilates|flexib/.test(a.type || "")));
     if (dA && dA[0] >= 0.4) finds.push([dA[0], "run", GOOD, "Ausdauer tut dir gut.", `An Tagen mit Lauf, Velo, Wanderung oder Rudern ist deine Stimmung im Schnitt ${fmt(dA[0], 1)} Punkte höher.`]);
     finds.sort((a, b) => b[0] - a[0]).slice(0, 2).forEach(([, ic, tone, title, why], i) =>
-      T(30 - i, "Stimmung", ic, tone, title, why + ` (${M90.length} Tage mit Einträgen)`, [M90[0].d, end]));
+      T(30 - i, "Stimmung", ic, tone, title, why + ` (${M90.length} Tage mit Einträgen)`, [M90[0].d, end], false, { t: "solange das Muster anhält" }));
   }
 
   // ---------- Kombinationen
@@ -1042,23 +1056,53 @@ function tipsCompute() {
   out.sort((a, b) => b.prio - a.prio);
   return { base: [fromB, toB], tips: out, from: from7, end, stale: lastH ? daysBetween(lastH, todayIso()) : null };
 }
+// Gleicher Hinweis = gleiche Kategorie + gleicher Titel ohne Zahlen („Seit 6 Tagen …“ = „Seit 7 Tagen …“)
+const tipKey = (t) => t.cat + "|" + t.title.replace(/\d+([.,']\d+)*/g, "#");
+// Rechnet Tag für Tag zurück, seit wann ein Hinweis ununterbrochen gilt (max. 60 Tage). Einmal pro Datenstand.
+let TIPS_CACHE = null;
+function tipsWithHistory() {
+  if (TIPS_CACHE && TIPS_CACHE.data === DATA) return TIPS_CACHE.r;
+  const r = tipsCompute(), open = new Map(r.tips.map(t => [tipKey(t), t]));
+  for (const t of r.tips) t.since = r.end;
+  for (let i = 1; i <= 60 && open.size; i++) {
+    const day = addDays(r.end, -i), keys = new Set(tipsCompute(day).tips.map(tipKey));
+    for (const [k, t] of [...open]) { if (keys.has(k)) t.since = day; else open.delete(k); }
+  }
+  for (const t of open.values()) t.sinceOver = true;   // gilt schon länger als 60 Tage
+  TIPS_CACHE = { data: DATA, r };
+  return r;
+}
+function tipLife(t, end) {
+  const today = todayIso(), a = t.since, isNew = a >= addDays(end, -1);
+  const left = t.sinceOver ? "seit über 60 Tagen" : `${isNew ? "neu " : ""}seit ${ddShort(a)}`;
+  let right, pct, open = false;
+  if (t.until.d) {
+    const span = Math.max(1, daysBetween(a, t.until.d));
+    pct = Math.min(100, Math.max(4, 100 * daysBetween(a, today) / span));
+    right = `bis spätestens ${ddShort(t.until.d)}`;
+  } else { open = true; pct = 62; right = t.until.t; }
+  const title = `Erschienen am ${dd(a)}. ` + (t.until.d ? `Ohne neue Auffälligkeiten ist der Hinweis spätestens am ${dd(t.until.d)} weg, wird es vorher besser, schon früher.`
+    : "Dieser Hinweis hat kein festes Ende.");
+  return `<div class="life${open ? " open" : ""}" title="${esc(title)}"><div class="lbar"><i style="width:${pct}%"></i></div>
+    <div class="lt"><span>${left}</span><span>${esc(right)}</span></div></div>`;
+}
 const TIP_CATS = { kraft: ["Krafttraining", "Erholung"], health: ["Schlaf", "Herz", "Erholung", "Stress", "Bewegung", "Cardio", "Balance", "Stimmung"], work: ["Arbeit", "Balance"] };
-function tipCard(t, base) {
+function tipCard(t, base, end) {
   const [a, b] = t.per, span = a === b ? dd(a) : `${ddShort(a)} – ${dd(b)}`;
   const per = `Zeitraum: ${span}${t.cmp ? ` · verglichen mit ${ddShort(base[0])} – ${dd(base[1])}` : ""}`;
-  return `<div class="tip-i" style="--tc:var(${t.tone})"><span class="ic">${icon(t.icon)}</span><div><div class="cat">${esc(t.cat)}</div><b>${esc(t.title)}</b><small>${esc(t.why)}</small><div class="per">${icon("clock")}${per}</div></div></div>`;
+  return `<div class="tip-i" style="--tc:var(${t.tone})"><span class="ic">${icon(t.icon)}</span><div class="tb"><div class="cat">${esc(t.cat)}</div><b>${esc(t.title)}</b><small>${esc(t.why)}</small>${tipLife(t, end)}<div class="per">${icon("clock")}${per}</div></div></div>`;
 }
 function renderTips() {
   const box = $("tips");
   if (TAB === "sync" || TAB === "help") { box.innerHTML = ""; return; }
-  const r = tipsCompute();
+  const r = tipsWithHistory();
   let list = r.tips;
   if (TIP_CATS[TAB]) list = list.filter(t => TIP_CATS[TAB].includes(t.cat));
   if (!list.length) { box.innerHTML = ""; return; }
   const n = TAB === "ov" ? 3 : 2, shown = tipsOpen ? list : list.slice(0, n);
   const staleTxt = r.stale != null && r.stale >= 2 ? ` · neueste Garmin-Daten vom ${dd(addDays(todayIso(), -r.stale))}` : "";
   box.innerHTML = `<div class="tips"><div class="hd"><h2>${TAB === "ov" ? "Deine Hinweise" : "Hinweise"}</h2><span>berechnet beim letzten Abgleich, neueste Daten vom ${dd(r.end)}${staleTxt}</span></div>
-    <div class="tiplist">${shown.map(t => tipCard(t, r.base)).join("")}</div>
+    <div class="tiplist">${shown.map(t => tipCard(t, r.base, r.end)).join("")}</div>
     <div class="tiplegend">${[["--critical", "ernst nehmen"], ["--s4", "beachten"], ["--s1", "zur Info"], ["--good", "gut gemacht"]].map(([c, t]) => `<span><i style="background:var(${c})"></i>${t}</span>`).join("")}</div>
     ${list.length > n ? `<button class="more" id="tipsMore">${tipsOpen ? "Weniger anzeigen" : `Alle ${list.length} Hinweise anzeigen`}</button>` : ""}</div>`;
   const b = $("tipsMore"); if (b) b.onclick = () => { tipsOpen = !tipsOpen; renderTips(); };
