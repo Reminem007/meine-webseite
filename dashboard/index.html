@@ -16,7 +16,7 @@
   --good: #0ca30c; --warning: #fab219; --critical: #d03b3b; --good-text: #006300;
   --sleep: #6b5bd2; --deep: #1f49b6; --light: #58a6ff; --rem: #b25fd9; --awake: #f27fb5;
   --heart: #d9435f; --steps: var(--s1); --bb: var(--s3); --stress: var(--s4); --kcal: var(--s2);
-  --im: #e2367a; --kraft: var(--s2); --work: #0f8fa5; --resp: #2a9bb5; --mood: #6b5bd2; --energy: #eb6834; --tension: #2a9bb5;
+  --im: #e2367a; --weight: var(--s3); --fat: var(--s4); --musc: var(--s1); --kraft: var(--s2); --work: #0f8fa5; --resp: #2a9bb5; --mood: #6b5bd2; --energy: #eb6834; --tension: #2a9bb5;
   --body: #e6e4dd; --idle: #d3d1c8; --heat1: #f6d68a; --heat2: #f3a65a; --heat3: #e8693e; --heat4: #d03b3b;
 }
 @media (prefers-color-scheme: dark) {
@@ -170,6 +170,20 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .life .lt { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .life .lt span:first-child { white-space: nowrap; }
 .life .lt span:last-child { text-align: right; }
+.bodygrid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+@media (max-width: 700px) { .bodygrid { grid-template-columns: minmax(0, 1fr); } }
+.body-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px 14px; margin-top: 0; }
+.body-kv b { display: block; }
+.dl { font-size: 11.5px; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.dl.good { color: var(--good-text, var(--good)); } .dl.bad { color: var(--s4); }
+.segbox { display: grid; gap: 4px; }
+.bodycharts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+@media (max-width: 900px) { .bodycharts { grid-template-columns: minmax(0, 1fr); } }
+.bct { font-size: 12.5px; margin-bottom: 4px; }
+.segsvg { width: 100%; max-width: 280px; height: auto; margin: 0 auto; display: block; }
+.segsvg .segv { font-size: 12px; font-weight: 700; fill: var(--musc); }
+.segsvg .segf { font-size: 11px; fill: var(--fat); }
+.segsvg .segl { font-size: 10.5px; fill: var(--muted); }
 .tiplegend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--muted); }
 .tiplegend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
 .tips .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
@@ -406,6 +420,7 @@ $("logout").addEventListener("click", () => { ls.del(KEY_STORE); location.reload
 
 // ================================================================ Symbole
 const ICONS = {
+  scale: '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8.5 9.5a5 5 0 0 1 7 0M12 9.5l1.6-1.8"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
   dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>',
   heart: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
@@ -619,7 +634,7 @@ function roundTop(x, y, w, h, r) {
   r = Math.min(r, w / 2, h);
   return `M${x},${y + h}V${y + r}q0,-${r} ${r},-${r}H${x + w - r}q${r},0 ${r},${r}V${y + h}Z`;
 }
-/* spec: { type: bar|line|stack|range|hbar, labels, series:[{v, color, name}], unit, dec, goal, goalTxt, zero, mini, area, xTicks:[idx], yMax } */
+/* spec: { type: bar|line|stack|range|hbar, labels, series:[{v, color, name}], unit, dec, goal, goalTxt, zero, mini, area, xTicks:[idx], yMax, connect } */
 function chart(target, spec) {
   const outer = typeof target === "string" ? $(target) : target; if (!outer) return;
   outer.innerHTML = '<div class="svgchart"></div>';
@@ -705,7 +720,7 @@ function chart(target, spec) {
     series.forEach(s => {
       const c = col(s); let d = "", pen = false, first = null, last = null;
       s.v.forEach((v, i) => {
-        if (v == null || isNaN(v)) { pen = false; return; }
+        if (v == null || isNaN(v)) { if (!spec.connect) pen = false; return; }
         d += `${pen ? "L" : "M"}${xS(i)},${yS(v)}`; pen = true; if (first == null) first = i; last = i;
       });
       if (spec.area && series.length === 1 && first != null) {
@@ -713,7 +728,7 @@ function chart(target, spec) {
         if (s.v.some(v => v == null)) a.remove();
       }
       el("path", { d, fill: "none", stroke: c, "stroke-width": mini ? 1.8 : 2, "stroke-linejoin": "round", "stroke-linecap": "round" });
-      if (!mini && n <= 45) s.v.forEach((v, i) => { if (v != null) el("circle", { cx: xS(i), cy: yS(v), r: 3.5, fill: c, stroke: css("--surface"), "stroke-width": 2 }); });
+      if (!mini && (n <= 45 || (spec.connect && s.v.filter(v => v != null).length <= 60))) s.v.forEach((v, i) => { if (v != null) el("circle", { cx: xS(i), cy: yS(v), r: 3.5, fill: c, stroke: css("--surface"), "stroke-width": 2 }); });
     });
   }
   if (spec.goal && !mini) {
@@ -913,10 +928,10 @@ let tipsOpen = false;
 // asOf: Hinweise so berechnen, als wären nur Daten bis zu diesem Tag da (für „erschienen am“)
 function tipsCompute(asOf) {
   const cut = (arr) => asOf ? (arr || []).filter(x => x.d <= asOf) : (arr || []);
-  const D = { health: cut(DATA.health), training: cut(DATA.training), work: cut(DATA.work), activities: cut(DATA.activities), mood: cut(DATA.mood) };
+  const D = { health: cut(DATA.health), training: cut(DATA.training), work: cut(DATA.work), activities: cut(DATA.activities), mood: cut(DATA.mood), body: cut(DATA.body) };
   const H = D.health, TR = D.training, W = D.work, A = D.activities;
   const lastH = H.length ? H[H.length - 1].d : null;
-  const end = [lastH, TR.length && TR[TR.length - 1].d, W.length && W[W.length - 1].d].filter(Boolean).sort().pop() || todayIso();
+  const end = [lastH, TR.length && TR[TR.length - 1].d, W.length && W[W.length - 1].d, D.body.length && D.body[D.body.length - 1].d].filter(Boolean).sort().pop() || todayIso();
   const from7 = addDays(end, -6), fromB = addDays(end, -34), toB = addDays(end, -7);
   const win = (arr, a, b) => arr.filter(x => x.d >= a && x.d <= b);
   const h7 = win(H, from7, end), hB = win(H, fromB, toB);
@@ -1049,6 +1064,22 @@ function tipsCompute(asOf) {
       T(30 - i, "Stimmung", ic, tone, title, why + ` (${M90.length} Tage mit Einträgen)`, [M90[0].d, end], false, { t: "solange das Muster anhält" }));
   }
 
+  // ---------- Körper (Withings-Waage)
+  const BD = (D.body || []).filter(x => !x.man);
+  if (BD.length) {
+    const lastB = BD[BD.length - 1], sinceB = sinceDays(lastB.d);
+    if (BD.length >= 3 && sinceB >= 14) T(35, "Körper", "scale", INFO, `Seit ${sinceB} Tagen nicht gewogen.`, "Regelmässig messen (z. B. 1× pro Woche, morgens) macht die Verläufe aussagekräftig.", [lastB.d, end], false, { t: "bis zur nächsten Messung" });
+    const b30 = win(BD, d30, end);
+    if (b30.length >= 2 && daysBetween(b30[0].d, b30[b30.length - 1].d) >= 14) {
+      const f = b30[0], l = b30[b30.length - 1], per = [f.d, l.d];
+      const dm = l.mm != null && f.mm != null ? l.mm - f.mm : null, df = l.fm != null && f.fm != null ? l.fm - f.fm : null, dw = l.w - f.w;
+      if (dm != null && dm >= 0.5) T(28, "Körper", "dumbbell", GOOD, `Muskelmasse +${fmt(dm, 1)} kg.`, `Von ${fmt(f.mm, 1)} auf ${fmt(l.mm, 1)} kg – das Krafttraining wirkt.`, per);
+      if (df != null && df <= -0.5) T(27, "Körper", "scale", GOOD, `Fettmasse ${fmt(df, 1)} kg.`, `Von ${fmt(f.fm, 1)} auf ${fmt(l.fm, 1)} kg.`, per);
+      if (df != null && df >= 1) T(42, "Körper", "scale", INFO, `Fettmasse +${fmt(df, 1)} kg.`, `Von ${fmt(f.fm, 1)} auf ${fmt(l.fm, 1)} kg in ${daysBetween(f.d, l.d)} Tagen.`, per);
+      else if (Math.abs(dw) >= 2 && (dm == null || Math.abs(dm) < 0.5)) T(38, "Körper", "scale", INFO, `Gewicht ${dw > 0 ? "+" : "−"}${fmt(Math.abs(dw), 1)} kg.`, `Von ${fmt(f.w, 1)} auf ${fmt(l.w, 1)} kg in ${daysBetween(f.d, l.d)} Tagen.`, per);
+    }
+  }
+
   // ---------- Kombinationen
   if (hours7 > 40 && sl7 != null && sl7 < 6.75) T(85, "Balance", "pulse", BAD, "Viel Arbeit und wenig Schlaf diese Woche.", `${fmt(hours7, 1)} h gearbeitet, Ø ${hmMin(sl7 * 60)} Schlaf. Plane bewusst Erholung ein, bevor du mehr Training draufpackst.`);
 
@@ -1086,7 +1117,7 @@ function tipLife(t, end) {
   return `<div class="life${open ? " open" : ""}" title="${esc(title)}"><div class="lbar"><i style="width:${pct}%"></i></div>
     <div class="lt"><span>${left}</span><span>${esc(right)}</span></div></div>`;
 }
-const TIP_CATS = { kraft: ["Krafttraining", "Erholung"], health: ["Schlaf", "Herz", "Erholung", "Stress", "Bewegung", "Cardio", "Balance", "Stimmung"], work: ["Arbeit", "Balance"] };
+const TIP_CATS = { kraft: ["Krafttraining", "Erholung", "Körper"], health: ["Schlaf", "Herz", "Erholung", "Stress", "Bewegung", "Cardio", "Balance", "Stimmung", "Körper"], work: ["Arbeit", "Balance"] };
 function tipCard(t, base, end) {
   const [a, b] = t.per, span = a === b ? dd(a) : `${ddShort(a)} – ${dd(b)}`;
   const per = `Zeitraum: ${span}${t.cmp ? ` · verglichen mit ${ddShort(base[0])} – ${dd(base[1])}` : ""}`;
@@ -1248,6 +1279,16 @@ function renderOverview() {
       : `<div class="muted">Keine Tagebuch-Einträge ${rangeWord()}.</div>`, `<a href="../tagebuch/" style="color:inherit">Tagebuch öffnen ↗</a>`));
   }
 
+  // Körper (Withings)
+  if ((D.body || []).length) {
+    const br = inR(D.body), last = (br.length ? br : D.body)[(br.length ? br : D.body).length - 1];
+    html.push(card("c4", "scale", "--weight", "Körper", `
+      <div class="big">${fmt(last.w, 1)}<small>kg</small></div>
+      <div class="muted">${br.length ? (one ? "gemessen " + last.t : `${br.length} Messung${br.length > 1 ? "en" : ""} ${rangeWord()}`) : "letzte Messung " + dd(last.d)}</div>
+      <div class="kv">${last.fp != null ? `<div>Fett<b>${fmt(last.fp, 1)} %</b></div>` : ""}${last.mm != null ? `<div>Muskeln<b>${fmt(last.mm, 1)} kg</b></div>` : ""}</div>
+      <div class="mini" id="ovBody"></div>`, `<a href="#health" data-goto="health" style="color:inherit">Details</a>`));
+  }
+
   // Atmung
   html.push(card("c4", "lungs", "--resp", "Atmung", `
     <div class="kv" style="margin-top:0"><div>${one ? "" : "Ø "}wach<b>${fmt(one ? day?.resp : avg(h.map(x => x.resp)), 0)} Atemzüge/min</b></div>
@@ -1283,6 +1324,8 @@ function renderOverview() {
     chart("ovHr", { type: "line", labels: L, series: [{ v: a("rhr"), color: "--heart" }], unit: "bpm", mini: true, zero: false, area: true });
     chart("ovKcal", { type: "stack", labels: L, unit: "kcal", series: [{ name: "Grund", v: B.map(b => avg(b.rows.map(x => x.kcal != null && x.kcalA != null ? x.kcal - x.kcalA : null))), color: "--grid" }, { name: "Aktiv", v: a("kcalA"), color: "--kcal" }], mini: true });
     chart("ovResp", { type: "line", labels: L, series: [{ v: a("resp"), color: "--resp", name: "wach" }, { v: a("respS"), color: "--sleep", name: "Schlaf" }], mini: true, zero: false });
+    if ($("ovBody")) { const BB = buckets(inR(D.body)); chart("ovBody", { type: "line", labels: BB.map(b => b.label), unit: "kg", dec: 1, zero: false, mini: true, connect: true,
+      series: [{ v: BB.map(b => avg(b.rows.map(x => x.w))), color: "--weight", name: "Gewicht" }] }); }
     if ($("ovMood")) { const BM = buckets(inR(D.mood)).filter(b => b.rows.length); chart("ovMood", { type: "line", labels: BM.map(b => b.label), unit: "", dec: 1, zero: false, yMin: 1, yMax: 5, mini: true,
       series: [{ v: BM.map(b => avg(b.rows.map(x => x.m))), color: "--mood", name: "Stimmung" }] }); }
     const BW = buckets(wk);
@@ -1396,8 +1439,10 @@ function renderHealth() {
       ${card(hasHrv ? "c6" : "c12", "lungs", "--resp", "Atmung", `<div class="chartbox" id="hResp"></div><div class="legend"><span><i style="background:var(--resp)"></i>wach</span><span><i style="background:var(--sleep)"></i>Schlaf</span></div>`, "Atemzüge/min")}
       ${(D.mood || []).length ? card("c12", "smile", "--mood", "Stimmung (Tagebuch)", `<div class="chartbox" id="hMood"></div><div class="legend"><span><i style="background:var(--mood)"></i>Stimmung</span><span><i style="background:var(--energy)"></i>Energie</span><span><i style="background:var(--tension)"></i>Anspannung</span></div>`, "1–5, nur Tage mit Einträgen") : ""}
       ${hasHrv ? card("c6", "pulse", "--s3", "HRV", `<div class="chartbox" id="hHrv"></div>`, "ms") : ""}
+      ${(D.body || []).length ? bodyCard() : ""}
       ${card("c12", "pulse", "--s1", "Aktivitäten", actList(inR(D.activities).slice().reverse().slice(0, 12).map(x => ({ ...x, kind: "garmin" }))), rangeWord())}
     </div>`;
+  if ((D.body || []).length) bodyCharts();
   chart("hSleep", { type: "stack", labels: L, unit: "min", series: [["Tief", "deep", "--deep"], ["Leicht", "light", "--light"], ["REM", "rem", "--rem"], ["Wach", "awake", "--awake"]].map(([n, k, c]) => ({ name: n, v: a(k), color: c })) });
   chart("hScore", { type: "line", labels: L, series: [{ v: a("sleepScore"), color: "--sleep", name: "Score" }], zero: false, area: true });
   chart("hRhr", { type: "line", labels: L, unit: "bpm", series: [{ v: a("rhr"), color: "--heart", name: "Ruhepuls" }], zero: false, area: true });
@@ -1414,6 +1459,62 @@ function renderHealth() {
     chart("hMood", { type: "line", labels: BM.map(b => b.label), dec: 1, zero: false, yMin: 1, yMax: 5,
       series: [{ v: am("m"), color: "--mood", name: "Stimmung" }, { v: am("e"), color: "--energy", name: "Energie" }, { v: am("a"), color: "--tension", name: "Anspannung" }] }); }
   if (hasHrv) chart("hHrv", { type: "line", labels: L, unit: "ms", series: [{ v: a("hrv"), color: "--s3", name: "HRV" }], zero: false });
+}
+
+// ---------------------------------------------------------------- Körper (Withings-Waage)
+const SEG = [["arm_r", "Arm rechts"], ["arm_l", "Arm links"], ["rumpf", "Rumpf"], ["bein_r", "Bein rechts"], ["bein_l", "Bein links"]];
+function bodyCard() {
+  const all = DATA.body, br = inR(all), last = all[all.length - 1], first = br.length ? br[0] : null;
+  const ref = br.length >= 2 ? br[0] : null, cur = br.length ? br[br.length - 1] : last;
+  const delta = (k, unit, dec = 1, goodUp = null) => {
+    if (!ref || ref[k] == null || cur[k] == null) return "";
+    const d = cur[k] - ref[k]; if (Math.abs(d) < 0.05) return `<small class="dl">±0</small>`;
+    const good = goodUp == null ? "" : (d > 0) === goodUp ? " good" : " bad";
+    return `<small class="dl${good}">${d > 0 ? "+" : "−"}${fmt(Math.abs(d), dec)}${unit}</small>`;
+  };
+  const kv = [["Gewicht", "w", "kg", null], ["Fett", "fp", "%", false], ["Fettmasse", "fm", "kg", false], ["Muskeln", "mm", "kg", true],
+    ["Wasser", "wa", "kg", null], ["Knochen", "bo", "kg", null], ["Viszeralfett", "vi", "", false], ["Grundumsatz", "bmr", "kcal", null], ["Stoffwechselalter", "age", "J.", false]]
+    .filter(([, k]) => cur[k] != null)
+    .map(([n, k, u, g]) => `<div>${n}<b>${fmt(cur[k], k === "bmr" || k === "age" ? 0 : 1)}${u ? " " + u : ""} ${delta(k, u === "kcal" || u === "J." ? "" : " " + u, k === "bmr" || k === "age" ? 0 : 1, g)}</b></div>`).join("");
+  const segLast = [...all].reverse().find(x => x.seg && x.seg.muskel);
+  const note = br.length ? `${br.length} Messung${br.length > 1 ? "en" : ""} ${rangeWord()}${ref ? ` · Veränderung seit ${dd(ref.d)}` : ""}` : `Keine Messung ${rangeWord()} – letzte vom ${dd(last.d)}`;
+  return card("c12", "scale", "--weight", "Körper", `
+    <div class="muted" style="margin-bottom:8px">${note}</div>
+    <div class="bodygrid">
+      <div><div class="kv body-kv">${kv}</div></div>
+      ${segLast ? `<div class="segbox">${segSvg(segLast)}<div class="legend" style="justify-content:center"><span><i style="background:var(--musc)"></i>Muskeln kg</span><span><i style="background:var(--fat)"></i>Fett kg</span></div>
+        <div class="muted" style="font-size:12px;text-align:center">je Körperteil · Messung vom ${dd(segLast.d)}</div></div>` : ""}
+    </div>
+    <div class="bodycharts">
+      <div><div class="muted bct">Gewicht (kg)</div><div class="chartbox" id="bWeight"></div></div>
+      <div><div class="muted bct">Muskeln (kg)</div><div class="chartbox" id="bMus"></div></div>
+      <div><div class="muted bct">Fettmasse (kg)</div><div class="chartbox" id="bFat"></div></div>
+    </div>`, last ? `Withings · zuletzt ${dd(last.d)}` : "Withings");
+}
+function segSvg(m) {
+  // Ansicht von vorne: dein rechter Arm ist links im Bild
+  const S = m.seg, mus = S.muskel || {}, fat = S.fett || {};
+  const maxM = { arm: Math.max(mus.arm_r || 0, mus.arm_l || 0) || 1, bein: Math.max(mus.bein_r || 0, mus.bein_l || 0) || 1, rumpf: mus.rumpf || 1 };
+  const part = (k, x, y, w, h) => {
+    const grp = k.split("_")[0], op = 0.18 + 0.32 * (mus[k] || 0) / maxM[grp];
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(w, h) / 2.4}" fill="var(--musc)" fill-opacity="${op.toFixed(2)}" stroke="var(--musc)" stroke-opacity=".45"/>`;
+  };
+  const lab = (k, x, y, anchor) => `<text x="${x}" y="${y}" text-anchor="${anchor}" class="segv">${fmt(mus[k], 1)}</text><text x="${x}" y="${y + 15}" text-anchor="${anchor}" class="segf">${fmt(fat[k], 1)}</text>`;
+  return `<svg viewBox="0 0 280 236" class="segsvg" role="img" aria-label="Muskeln und Fett je Körperteil">
+    <circle cx="140" cy="20" r="15" fill="var(--track)"/>
+    ${part("rumpf", 108, 40, 64, 92)}${part("arm_r", 80, 42, 24, 90)}${part("arm_l", 176, 42, 24, 90)}
+    ${part("bein_r", 110, 138, 28, 92)}${part("bein_l", 142, 138, 28, 92)}
+    ${lab("rumpf", 140, 82, "middle")}
+    ${lab("arm_r", 72, 82, "end")}${lab("arm_l", 208, 82, "start")}
+    ${lab("bein_r", 102, 182, "end")}${lab("bein_l", 178, 182, "start")}
+    <text x="72" y="124" text-anchor="end" class="segl">rechts</text><text x="208" y="124" class="segl">links</text>
+  </svg>`;
+}
+function bodyCharts() {
+  const B = buckets(inR(DATA.body)), L = B.map(b => b.label), a = (k) => B.map(b => avg(b.rows.map(x => x[k])));
+  chart("bWeight", { type: "line", labels: L, unit: "kg", dec: 1, zero: false, connect: true, series: [{ v: a("w"), color: "--weight", name: "Gewicht" }] });
+  chart("bMus", { type: "line", labels: L, unit: "kg", dec: 1, zero: false, connect: true, series: [{ v: a("mm"), color: "--musc", name: "Muskeln" }] });
+  chart("bFat", { type: "line", labels: L, unit: "kg", dec: 1, zero: false, connect: true, series: [{ v: a("fm"), color: "--fat", name: "Fettmasse" }] });
 }
 
 // ---------------------------------------------------------------- Arbeitszeit
