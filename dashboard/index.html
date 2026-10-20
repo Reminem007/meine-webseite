@@ -299,6 +299,118 @@ nav.bottom { display: none; }
   .grid.ov .c3, .grid.ov .c4 { grid-column: span 12; }
   .big { font-size: 26px; }
 }
+
+/* =====================================================================
+   Modern (20.10.2026) – angelehnt an Google Health und Apple Health:
+   weiche Karten ohne Rahmen, farbige Kartentitel, Farbverlauf oben,
+   Kacheln mit Füllstand, Schlafindex-Linie, Hypnogramm in Bahnen, Schlafuhr
+   ===================================================================== */
+:root {
+  --page: #f6f5f1; --surface: #ffffff; --surface-2: #f1f0eb; --ring: rgba(20,20,40,0.06); --track: #ecebe5;
+  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 14px 34px -16px rgba(16,24,40,.16);
+  --rc: 24px;
+  --pill-steps: #14a395; --pill-bb: #43a047; --pill-sleep: #7457d6; --pill-heart: #e04a68; --pill-body: #d9831a;
+  --hero: radial-gradient(55% 140% at 0% 0%, #c6efe8 0%, transparent 62%), radial-gradient(45% 140% at 52% 0%, #ddd8ff 0%, transparent 66%), radial-gradient(45% 140% at 100% 0%, #ffd9e4 0%, transparent 62%);
+  --lockbg: linear-gradient(135deg, #c6efe8 0%, #ddd8ff 48%, #ffd9e4 100%);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #0e0e10; --surface: #19191c; --surface-2: #232327; --ring: rgba(255,255,255,0.07); --track: #2a2a2e; --shadow: 0 1px 0 rgba(255,255,255,.03) inset;
+  --hero: radial-gradient(55% 140% at 0% 0%, rgba(40,150,140,.30) 0%, transparent 62%), radial-gradient(45% 140% at 52% 0%, rgba(110,95,220,.30) 0%, transparent 66%), radial-gradient(45% 140% at 100% 0%, rgba(220,90,130,.24) 0%, transparent 62%);
+  --lockbg: linear-gradient(135deg, #10302d 0%, #221d45 50%, #3a1828 100%);
+} }
+:root[data-theme="dark"] {
+  --page: #0e0e10; --surface: #19191c; --surface-2: #232327; --ring: rgba(255,255,255,0.07); --track: #2a2a2e; --shadow: 0 1px 0 rgba(255,255,255,.03) inset;
+  --hero: radial-gradient(55% 140% at 0% 0%, rgba(40,150,140,.30) 0%, transparent 62%), radial-gradient(45% 140% at 52% 0%, rgba(110,95,220,.30) 0%, transparent 66%), radial-gradient(45% 140% at 100% 0%, rgba(220,90,130,.24) 0%, transparent 62%);
+  --lockbg: linear-gradient(135deg, #10302d 0%, #221d45 50%, #3a1828 100%);
+}
+body { font-family: "Google Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+#lock { background: var(--lockbg); }
+#lock form { border: 0; border-radius: 28px; padding: 32px; background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 30px 60px -30px rgba(30,20,60,.45); }
+#lock h1 { font-size: 26px; }
+#lock input[type=password] { border-radius: 14px; padding: 13px 14px; border-color: var(--ring); background: var(--surface); }
+#lock .primary { border-radius: 14px; padding: 13px; }
+
+main { position: relative; isolation: isolate; padding-top: 26px; }
+main::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 360px; background: var(--hero); z-index: -1;
+  -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); pointer-events: none; }
+.topbar { margin-bottom: 20px; }
+.topbar h1 { font-size: 32px; font-weight: 750; letter-spacing: -0.025em; }
+
+nav.side { border-right: 0; top: 12px; height: calc(100vh - 24px); margin: 12px 0 12px 12px; border-radius: 28px; padding: 18px 12px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: var(--shadow); }
+.navbtn { gap: 12px; padding: 10px 12px; border-radius: 14px; font-weight: 500; color: var(--ink); }
+.navbtn svg { color: var(--nc, var(--ink-2)); width: 21px; height: 21px; }
+.navbtn:hover { background: color-mix(in srgb, var(--nc, var(--ink)) 8%, transparent); }
+.navbtn[aria-current="page"] { background: color-mix(in srgb, var(--nc, var(--ink)) 14%, var(--surface)); color: color-mix(in srgb, var(--nc, var(--ink)) 70%, var(--ink)); box-shadow: none; border: 0; font-weight: 650; }
+.ghost { border-radius: 12px; border-color: var(--ring); }
+#rangeBtn, .rangebar .arrow { border-radius: 14px; border-color: transparent; box-shadow: var(--shadow); }
+#rangePop { border-radius: 22px; border-color: transparent; }
+
+.grid { gap: 16px; }
+.card, .tile, .tips { border-color: transparent; border-radius: var(--rc); box-shadow: var(--shadow); }
+.card { padding: 18px 20px; }
+.tile { border-radius: 20px; }
+.ch { gap: 7px; margin-bottom: 12px; }
+.ch .ic { background: transparent !important; width: auto; height: auto; border-radius: 0; color: var(--cc, inherit) !important; }
+.ch .ic svg { width: 18px; height: 18px; }
+.ch h3 { color: var(--cc, var(--ink)); font-size: 15.5px; font-weight: 650; }
+.ch .right a, .ch .right button { color: var(--muted); }
+.big { font-size: 34px; font-weight: 750; letter-spacing: -0.03em; }
+.big small { color: var(--muted); font-size: 15px; }
+.split { height: 12px; border-radius: 99px; gap: 3px; }
+.split div { border-radius: 99px; }
+.alert { border-radius: 18px; border: 0; }
+.tip-i { border-radius: 18px; border: 0; }
+.chip { border-radius: 99px; }
+.seg { border-radius: 14px; } .seg button { border-radius: 11px; }
+nav.bottom button[aria-current="page"] { color: var(--nc, var(--ink)); }
+nav.bottom button svg { color: inherit; }
+
+/* Kacheln mit Füllstand (wie Google Health) */
+.pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.pill { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 14px 18px; border-radius: 30px;
+  background: color-mix(in srgb, var(--pc) 16%, var(--surface)); color: color-mix(in srgb, var(--pc) 45%, var(--ink)); }
+.pill .pfill { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--pc) 30%, var(--surface)); border-radius: 30px 0 0 30px; }
+.pill .pfill.full { border-radius: 30px; }
+.pill .pic { position: relative; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: color-mix(in srgb, var(--pc) 12%, var(--surface)); color: color-mix(in srgb, var(--pc) 75%, var(--ink)); }
+.pill .pic svg { width: 22px; height: 22px; }
+.pill .pt { position: relative; min-width: 0; }
+.pill .pl { font-size: 14px; font-weight: 600; opacity: .85; }
+.pill .pv { font-size: 26px; font-weight: 750; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill .pv small { font-size: 14px; font-weight: 650; margin-left: 2px; }
+.pill .ps { font-size: 12.5px; font-weight: 600; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Schlafindex */
+.sleephead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; }
+.sleephead .sx { font-size: 46px; font-weight: 750; color: var(--sleep); letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.sleephead .lb { font-size: 13px; color: var(--ink-2); font-weight: 600; margin-bottom: 4px; }
+.qchip { display: inline-block; margin-top: 8px; padding: 4px 12px; border-radius: 99px; font-size: 13px; font-weight: 650; background: color-mix(in srgb, var(--s1) 16%, var(--surface)); color: color-mix(in srgb, var(--s1) 70%, var(--ink)); }
+.qchip.warn { background: color-mix(in srgb, var(--s4) 18%, var(--surface)); color: color-mix(in srgb, var(--s4) 60%, var(--ink)); }
+.sleephead .dur { text-align: right; }
+.scoreline { height: 92px; min-width: 0; }
+@media (max-width: 700px) { .sleephead { grid-template-columns: auto minmax(0, 1fr); } .sleephead .dur { grid-column: 1 / -1; text-align: left; } }
+
+/* Hypnogramm in Bahnen */
+.hyp .lane-l { font-size: 13px; fill: var(--ink-2); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; stroke-linejoin: round; }
+.hyp .lane-l tspan { fill: var(--ink); font-weight: 650; }
+.hyp .lane { fill: var(--surface-2); }
+
+/* Schlafuhr */
+.clockwrap { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 8px; }
+.clocksvg { width: 100%; max-width: 280px; height: auto; display: block; }
+.clocksvg .hr { font-size: 12px; fill: var(--ink-2); font-weight: 600; }
+.clockkv { display: flex; gap: 28px; justify-content: center; text-align: center; }
+.clockkv div { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+.clockkv b { display: block; font-size: 22px; color: var(--ink); letter-spacing: -0.01em; text-transform: none; font-variant-numeric: tabular-nums; }
+@media (max-width: 820px) {
+  main::before { height: 260px; }
+  .topbar h1 { font-size: 26px; }
+  .pills { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .pill { min-height: 76px; padding: 12px 14px; gap: 10px; border-radius: 26px; }
+  .pill .pic { width: 38px; height: 38px; } .pill .pic svg { width: 19px; height: 19px; }
+  .pill .pv { font-size: 21px; }
+}
 </style>
 </head>
 <body>
@@ -427,6 +539,7 @@ const ICONS = {
   briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
   sync: '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/>',
   shoe: '<path d="M3 17h17a1 1 0 0 0 1-1v-.5a3 3 0 0 0-2.4-2.9l-4.1-.8L12 8l-3 1-1-3H5L3 13z"/><path d="M3 20h18"/>',
   battery: '<rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 10v4M7 10v4M10 10v4"/>',
   wave: '<path d="M3 12h3l2-5 3 10 3-8 2 3h5"/>',
@@ -476,7 +589,7 @@ function ago(t) {
 }
 function tile(label, value, note = "") { return `<div class="tile"><div class="label">${esc(label)}</div><div class="value">${value}</div><div class="note">${esc(note)}</div></div>`; }
 function card(cls, iconName, cssVar, title, body, right = "") {
-  return `<div class="card ${cls}"><div class="ch">${icBox(iconName, cssVar)}<h3>${esc(title)}</h3>${right ? `<span class="right">${right}</span>` : ""}</div>${body}</div>`;
+  return `<div class="card ${cls}" style="--cc:var(${cssVar})"><div class="ch">${icBox(iconName, cssVar)}<h3>${esc(title)}</h3>${right ? `<span class="right">${right}</span>` : ""}</div>${body}</div>`;
 }
 
 // ================================================================ Zeitraum
@@ -768,22 +881,96 @@ function ring(value, max, cssVar, size = 96, inner = "", stroke = 10) {
     <div class="mid">${inner}</div></div>`;
 }
 
-// Schlafphasen einer Nacht (Hypnogramm)
+// Schlafphasen einer Nacht (Hypnogramm): eine Bahn pro Phase, Übergänge als Verbindungslinien
+const durTxt = (m) => m >= 60 ? `${Math.floor(m / 60)} Std. ${pad2(Math.round(m % 60))} Min.` : `${Math.round(m)} Min.`;
 function hypnogram(target, seg, bed, wake) {
   const box = $(target); box.innerHTML = "";
   if (!seg || !seg.length) { box.innerHTML = '<div class="empty">Kein Schlafverlauf gespeichert.</div>'; return; }
-  const W = box.clientWidth || 320, H = box.clientHeight || 120, L = 46, B = 18;
-  const total = Math.max(...seg.map(s => s[0] + s[1]));
-  const rows = { 3: 0, 2: 1, 1: 2, 0: 3 }, color = { 3: "--awake", 2: "--rem", 1: "--light", 0: "--deep" }, name = { 3: "Wach", 2: "REM", 1: "Leicht", 0: "Tief" };
-  const rh = (H - B) / 4;
-  let s = `<svg viewBox="0 0 ${W} ${H}" aria-label="Schlafphasen">`;
-  for (const lv of [3, 2, 1, 0]) s += `<text x="${L - 8}" y="${rows[lv] * rh + rh / 2 + 4}" text-anchor="end" class="tick">${name[lv]}</text><line x1="${L}" x2="${W}" y1="${rows[lv] * rh + rh / 2}" y2="${rows[lv] * rh + rh / 2}" class="gl"/>`;
-  for (const [a, d, lv] of seg) {
-    const x = L + (W - L) * a / total, w = Math.max(1, (W - L) * d / total);
-    s += `<rect x="${x}" y="${rows[lv] * rh + 3}" width="${w}" height="${rh - 6}" rx="2" fill="var(${color[lv]})"/>`;
+  const W = box.clientWidth || 320, H = box.clientHeight || 250, foot = 20, pad = 4;
+  const total = Math.max(...seg.map(x => x[0] + x[1]));
+  const order = [3, 2, 1, 0], name = { 3: "Wach", 2: "REM-Schlaf", 1: "Leichtschlaf", 0: "Tiefschlaf" };
+  const color = { 3: "--awake", 2: "--rem", 1: "--light", 0: "--deep" };
+  const sumLv = { 0: 0, 1: 0, 2: 0, 3: 0 }; for (const [, d, lv] of seg) sumLv[lv] += d;
+  const laneH = (H - foot) / 4, trackH = Math.min(26, laneH * 0.42), lab = laneH - trackH - 6;
+  const yTrack = (lv) => order.indexOf(lv) * laneH + lab;
+  const xS = (m) => pad + (W - 2 * pad) * m / total;
+  let defs = "", body = "", labels = "";
+  order.forEach(lv => {
+    const y = yTrack(lv);
+    labels += `<text x="${pad}" y="${y - 7}" class="lane-l">${name[lv]} · <tspan>${durTxt(sumLv[lv])}</tspan></text>`;
+    body += `<rect class="lane" x="${pad}" y="${y}" width="${W - 2 * pad}" height="${trackH}" rx="${trackH / 2}"/>`;
+  });
+  // Verbindungen zuerst (liegen hinter den Balken)
+  const sorted = seg.slice().sort((a, b) => a[0] - b[0]);
+  sorted.forEach((x, i) => {
+    const nx = sorted[i + 1]; if (!nx || nx[2] === x[2]) return;
+    const xx = xS(x[0] + x[1]), y1 = yTrack(x[2]) + trackH / 2, y2 = yTrack(nx[2]) + trackH / 2, id = `${target}g${i}`;
+    defs += `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="${y1}" x2="0" y2="${y2}"><stop offset="0" stop-color="${css(color[x[2]])}"/><stop offset="1" stop-color="${css(color[nx[2]])}"/></linearGradient>`;
+    body += `<line x1="${xx}" x2="${xx}" y1="${y1}" y2="${y2}" stroke="url(#${id})" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>`;
+  });
+  for (const [a, d, lv] of sorted) {
+    const x = xS(a), w = Math.max(2.5, xS(a + d) - x);
+    body += `<rect x="${x}" y="${yTrack(lv)}" width="${w}" height="${trackH}" rx="${Math.min(trackH / 2, w / 2)}" fill="var(${color[lv]})"><title>${name[lv]}: ${durTxt(d)}</title></rect>`;
   }
-  s += `<text x="${L}" y="${H - 3}" class="tick">${esc(bed || "")}</text><text x="${W}" y="${H - 3}" text-anchor="end" class="tick">${esc(wake || "")}</text></svg>`;
-  box.innerHTML = `<div class="svgchart">${s}</div>`;
+  body += labels;
+  const mid = (() => { if (!bed) return ""; const [h, m] = bed.split(":").map(Number); const t = (h * 60 + m + total / 2) % 1440; return `${pad2(Math.floor(t / 60))}:${pad2(Math.round(t % 60) % 60)}`; })();
+  body += `<text x="${pad}" y="${H - 3}" class="tick">${esc(bed || "")} Uhr</text>` + (mid ? `<text x="${W / 2}" y="${H - 3}" text-anchor="middle" class="tick">${mid} Uhr</text>` : "") +
+    `<text x="${W - pad}" y="${H - 3}" text-anchor="end" class="tick">${esc(wake || "")} Uhr</text>`;
+  box.innerHTML = `<div class="svgchart"><svg viewBox="0 0 ${W} ${H}" class="hyp" aria-label="Schlafphasen"><defs>${defs}</defs>${body}</svg></div>`;
+}
+
+// Schlafindex der letzten 7 Tage (Linie mit Punkten, unter 80 gelb, Wochentage darunter)
+function scoreLine(target, endDay) {
+  const box = $(target); if (!box) return;
+  const days = Array.from({ length: 7 }, (_, i) => addDays(endDay, i - 6));
+  const by = new Map((DATA.health || []).map(x => [x.d, x.sleepScore]));
+  const v = days.map(d => by.get(d) ?? null);
+  const W = box.clientWidth || 300, H = box.clientHeight || 92, top = 8, bot = 26, pad = 10;
+  const vals = v.filter(x => x != null); if (!vals.length) { box.innerHTML = ""; return; }
+  const lo = Math.min(55, ...vals) - 3, hi = Math.max(95, ...vals) + 3;
+  const xS = (i) => pad + (W - 2 * pad) * i / 6, yS = (x) => top + (H - top - bot) * (1 - (x - lo) / (hi - lo));
+  const good = css("--s1"), warn = css("--s4");
+  let s = `<line x1="${pad}" x2="${W - pad}" y1="${yS(80)}" y2="${yS(80)}" stroke="${good}" stroke-dasharray="2 4" stroke-width="2" opacity=".6"/>`;
+  s += `<line x1="${pad}" x2="${W - pad}" y1="${yS(60)}" y2="${yS(60)}" stroke="${warn}" stroke-dasharray="2 4" stroke-width="2" opacity=".6"/>`;
+  for (let i = 0; i < 6; i++) if (v[i] != null && v[i + 1] != null)
+    s += `<line x1="${xS(i)}" y1="${yS(v[i])}" x2="${xS(i + 1)}" y2="${yS(v[i + 1])}" stroke="${v[i] < 80 || v[i + 1] < 80 ? warn : good}" stroke-width="3.5" stroke-linecap="round"/>`;
+  v.forEach((x, i) => { if (x != null) s += `<circle cx="${xS(i)}" cy="${yS(x)}" r="5.5" fill="${x < 80 ? warn : good}"><title>${dd(days[i])}: ${x}</title></circle>`; });
+  days.forEach((d, i) => {
+    const sel = d === endDay && single();
+    if (sel) s += `<rect x="${xS(i) - 11}" y="${H - 21}" width="22" height="20" rx="8" fill="var(--surface-2)"/>`;
+    s += `<text x="${xS(i)}" y="${H - 6}" text-anchor="middle" class="tick" style="font-weight:${sel ? 700 : 500};fill:var(--ink-2)">${WD[parse(d).getDay()][0]}</text>`;
+  });
+  box.innerHTML = `<div class="svgchart"><svg viewBox="0 0 ${W} ${H}" aria-label="Schlafindex der letzten 7 Tage">${s}</svg></div>`;
+}
+
+// Schlafuhr: durchschnittliche Bett- und Aufstehzeit auf einem 24-Stunden-Zifferblatt
+function sleepClock(rows) {
+  const toMin = (t) => { if (!t) return null; const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const beds = rows.map(r => toMin(r.bed)).filter(x => x != null).map(m => m < 720 ? m + 1440 : m);
+  const wakes = rows.map(r => toMin(r.wake)).filter(x => x != null).map(m => m < 1080 ? m + 1440 : m);
+  if (!beds.length || !wakes.length) return "";
+  const b = avg(beds) % 1440, w = avg(wakes) % 1440, dur = ((w - b) + 1440) % 1440;
+  const sdB = Math.sqrt(avg(beds.map(x => (x - avg(beds)) ** 2)));
+  const hhmm = (m) => `${pad2(Math.floor(m / 60) % 24)}:${pad2(Math.round(m % 60) % 60)}`;
+  const S = 260, c = S / 2, R1 = 112, R2 = 84, ang = (m) => (m / 1440) * 2 * Math.PI - Math.PI / 2;
+  const pt = (m, r) => [c + r * Math.cos(ang(m)), c + r * Math.sin(ang(m))];
+  const arcR = (R1 + R2) / 2, [x1, y1] = pt(b, arcR), [x2, y2] = pt(w, arcR), large = dur > 720 ? 1 : 0;
+  let ticks = "";
+  for (let i = 0; i < 96; i++) { const m = i * 15, maj = i % 4 === 0, [a1, b1] = pt(m, R2 - 8), [a2, b2] = pt(m, R2 - (maj ? 15 : 11));
+    ticks += `<line x1="${a1}" y1="${b1}" x2="${a2}" y2="${b2}" stroke="var(--axis)" stroke-width="${maj ? 1.6 : 1}"/>`; }
+  const lbl = [[0, "0"], [360, "6"], [720, "12"], [1080, "18"]].map(([m, t]) => { const [x, y] = pt(m, R2 - 28); return `<text x="${x}" y="${y + 4}" text-anchor="middle" class="hr">${t}</text>`; }).join("");
+  const ends = [[b, "moon"], [w, "sun"]].map(([m, ic]) => { const [x, y] = pt(m, arcR); return `<circle cx="${x}" cy="${y}" r="13" fill="var(--surface)"/><g transform="translate(${x - 8} ${y - 8}) scale(.667)" fill="none" stroke="${css(ic === "moon" ? "--sleep" : "--s4")}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[ic]}</g>`; }).join("");
+  return `<div class="clockwrap">
+    <div class="clockkv"><div>Ø Bettzeit<b>${hhmm(b)}</b></div><div>Ø Aufwachen<b>${hhmm(w)}</b></div></div>
+    <svg viewBox="0 0 ${S} ${S}" class="clocksvg" aria-label="Schlafenszeiten">
+      <circle cx="${c}" cy="${c}" r="${R1}" fill="var(--surface-2)"/><circle cx="${c}" cy="${c}" r="${R2}" fill="var(--surface)"/>
+      ${ticks}${lbl}
+      <path d="M${x1},${y1} A${arcR},${arcR} 0 ${large} 1 ${x2},${y2}" fill="none" stroke="var(--sleep)" stroke-opacity=".28" stroke-width="${R1 - R2 - 6}" stroke-linecap="round"/>
+      ${ends}
+      <text x="${c}" y="${c - 2}" text-anchor="middle" style="font-size:22px;font-weight:750;fill:var(--ink)">${Math.floor(dur / 60)} h ${pad2(Math.round(dur % 60))}</text>
+      <text x="${c}" y="${c + 16}" text-anchor="middle" class="tick">im Bett, Ø</text>
+    </svg>
+    <div class="muted">${sdB <= 30 ? "Regelmässiger Rhythmus" : sdB <= 60 ? "Rhythmus schwankt etwas" : "Rhythmus schwankt stark"} · Bettzeit ±${Math.round(sdB)} Min. · ${beds.length} Nächte</div></div>`;
 }
 
 // ================================================================ Muskelkarte
@@ -871,14 +1058,14 @@ function bodyPair(fills, titles, small = false) {
 
 // ================================================================ Navigation
 const TABS = [
-  ["ov", "Übersicht", "grid"], ["kraft", "Krafttraining", "dumbbell"], ["health", "Gesundheit", "heart"],
-  ["work", "Arbeitszeit", "briefcase"], ["sync", "Synchronisation", "sync"], ["help", "Info & Technik", "book"],
+  ["ov", "Übersicht", "grid", "--s1"], ["kraft", "Krafttraining", "dumbbell", "--kraft"], ["health", "Gesundheit", "heart", "--heart"],
+  ["work", "Arbeitszeit", "briefcase", "--work"], ["sync", "Synchronisation", "sync", "--s3"], ["help", "Info & Technik", "book", "--sleep"],
 ];
 const SHORT = { ov: "Übersicht", kraft: "Kraft", health: "Gesundheit", work: "Arbeit", sync: "Sync" };
 let TAB = (location.hash || "").slice(1);
 if (!TABS.some(t => t[0] === TAB)) TAB = "ov";
-$("sideNav").innerHTML = TABS.map(([k, n, i]) => `<button class="navbtn" data-tab="${k}">${icon(i)}${n}</button>`).join("");
-$("bottomNav").innerHTML = TABS.filter(([k]) => SHORT[k]).map(([k, , i]) => `<button data-tab="${k}">${icon(i)}${SHORT[k]}</button>`).join("");
+$("sideNav").innerHTML = TABS.map(([k, n, i, c]) => `<button class="navbtn" data-tab="${k}" style="--nc:var(${c})">${icon(i)}${n}</button>`).join("");
+$("bottomNav").innerHTML = TABS.filter(([k]) => SHORT[k]).map(([k, , i, c]) => `<button data-tab="${k}" style="--nc:var(${c})">${icon(i)}${SHORT[k]}</button>`).join("");
 for (const nav of [$("sideNav"), $("bottomNav")]) nav.addEventListener("click", (ev) => {
   const b = ev.target.closest("button[data-tab]"); if (!b) return;
   TAB = b.dataset.tab; history.replaceState(null, "", "#" + TAB); scrollTo(0, 0); render();
@@ -914,7 +1101,7 @@ function show() {
   splitTraining();
   $("lock").hidden = true; $("app").hidden = false;
   if (DATA.tagebuch && !$("tbLink")) {
-    $("sideNav").insertAdjacentHTML("beforeend", `<a class="navbtn" id="tbLink" href="../tagebuch/" style="text-decoration:none">${icon("book")}Tagebuch ↗</a>`);
+    $("sideNav").insertAdjacentHTML("beforeend", `<a class="navbtn" id="tbLink" href="../tagebuch/" style="text-decoration:none;--nc:var(--mood)">${icon("book")}Tagebuch ↗</a>`);
     $("bottomNav").insertAdjacentHTML("beforeend", `<button onclick="location.href='../tagebuch/'">${icon("book")}Tagebuch</button>`);
   }
   render();
@@ -1180,17 +1367,18 @@ function renderOverview() {
   const phTot = sum(Object.values(ph));
   const Q = { EXCELLENT: "Ausgezeichnet", GOOD: "Gut", FAIR: "Mittelmässig", POOR: "Schlecht" };
   const scoreTxt = one ? (Q[sl?.sleepQ] || "") : (score != null ? (score >= 90 ? "Ausgezeichnet" : score >= 80 ? "Gut" : score >= 60 ? "Mittelmässig" : "Schlecht") : "");
+  const endDay = one ? R.from : (h.length ? h[h.length - 1].d : R.to);
+  const showHyp = one && curves.sleep;
   html.push(card("c8", "moon", "--sleep", "Schlaf", `
-    <div class="ringrow">
-      ${ring(score, 100, "--sleep", 96, `<b>${fmt(score)}</b><span>${one ? "Score" : "Ø Score"}</span>`)}
-      <div style="flex:1;min-width:0">
-        <div class="big">${sleepMin ? `${Math.floor(sleepMin / 60)}<small>h</small> ${pad2(Math.round(sleepMin % 60))}<small>min</small>` : "–"}</div>
-        <div class="muted">${esc(scoreTxt)}${one && sl?.bed ? ` · ${sl.bed} – ${sl.wake}` : one ? "" : " · Ø pro Nacht"}</div>
-        ${phTot ? `<div class="split">${[["deep", "--deep"], ["light", "--light"], ["rem", "--rem"], ["awake", "--awake"]].map(([k, c]) => `<div style="flex:${ph[k] || 0};background:var(${c})"></div>`).join("")}</div>` : ""}
-        <div class="legend">${[["Tief", "deep", "--deep"], ["Leicht", "light", "--light"], ["REM", "rem", "--rem"], ["Wach", "awake", "--awake"]].map(([n, k, c]) => `<span><i style="background:var(${c})"></i>${n}<b>${ph[k] != null ? hm(ph[k]).replace(" h 0", " h ").replace(/^0 h /, "") : "–"}</b></span>`).join("")}</div>
-      </div>
+    <div class="sleephead">
+      <div><div class="lb">${one ? "Schlafindex" : "Ø Schlafindex"}</div><div class="sx">${fmt(score)}</div>${scoreTxt ? `<span class="qchip${score != null && score < 80 ? " warn" : ""}">${esc(scoreTxt)}</span>` : ""}</div>
+      <div class="scoreline" id="ovScoreLine"></div>
+      <div class="dur"><div class="big">${sleepMin ? `${Math.floor(sleepMin / 60)}<small>h</small> ${pad2(Math.round(sleepMin % 60))}<small>min</small>` : "–"}</div>
+        <div class="muted">${one && sl?.bed ? `${sl.bed} – ${sl.wake}` : one ? "" : "Ø pro Nacht"}</div></div>
     </div>
-    <div class="chartbox" style="height:${one ? 120 : 110}px;margin-top:12px" id="ovSleep"></div>`, one ? "Schlafverlauf" : "Schlafphasen " + GRAIN_TXT[g]));
+    ${phTot && !showHyp ? `<div class="split">${[["deep", "--deep"], ["light", "--light"], ["rem", "--rem"], ["awake", "--awake"]].map(([k, c]) => `<div style="flex:${ph[k] || 0};background:var(${c})"></div>`).join("")}</div>
+    <div class="legend">${[["Tief", "deep", "--deep"], ["Leicht", "light", "--light"], ["REM", "rem", "--rem"], ["Wach", "awake", "--awake"]].map(([n, k, c]) => `<span><i style="background:var(${c})"></i>${n}<b>${ph[k] != null ? hm(ph[k]).replace(" h 0", " h ").replace(/^0 h /, "") : "–"}</b></span>`).join("")}</div>` : ""}
+    <div class="chartbox" style="height:${one ? 250 : 120}px;margin-top:14px" id="ovSleep"></div>`, one ? "Schlafindex: letzte 7 Tage" : "Schlafphasen " + GRAIN_TXT[g]));
 
   // Schritte
   const steps = one ? day?.steps : avg(h.map(x => x.steps)), goal = one ? day?.goal : avg(h.map(x => x.goal));
@@ -1295,7 +1483,16 @@ function renderOverview() {
     <div>${one ? "" : "Ø "}Schlaf<b>${fmt(one ? day?.respS : avg(h.map(x => x.respS)), 0)} Atemzüge/min</b></div></div>
     <div class="mini" id="ovResp"></div>`));
 
-  S.innerHTML = `<div class="grid ov">${html.join("")}</div>`;
+  // Kacheln oben (wie Google Health): Füllstand = Anteil am Ziel
+  const pills = [];
+  const P = (ic, c, l, v, sub, frac) => pills.push(`<div class="pill" style="--pc:var(${c})">${frac != null && !isNaN(frac) ? `<div class="pfill${frac >= 0.98 ? " full" : ""}" style="width:${Math.max(6, Math.min(100, frac * 100)).toFixed(1)}%"></div>` : ""}<span class="pic">${icon(ic)}</span><div class="pt"><div class="pl">${l}</div><div class="pv">${v}</div>${sub ? `<div class="ps">${sub}</div>` : ""}</div></div>`);
+  if (steps != null) P("shoe", "--pill-steps", "Schritte", fmt(steps), goal ? `${fmt(100 * steps / goal)} % vom Ziel` : "", goal ? steps / goal : null);
+  if (bbNow != null) P("battery", "--pill-bb", "Tagesform", fmt(bbNow), "Body Battery", bbNow / 100);
+  if (sleepMin) P("moon", "--pill-sleep", "Schlaf", `${Math.floor(sleepMin / 60)}<small>h</small> ${pad2(Math.round(sleepMin % 60))}<small>m</small>`, score != null ? `${fmt(score)} · ${esc(scoreTxt)}` : "", score != null ? score / 100 : null);
+  if (rhr != null) P("heart", "--pill-heart", "Ruhepuls", `${fmt(rhr)}<small>bpm</small>`, one ? "" : "Ø im Zeitraum", null);
+  if ((D.body || []).length) { const lb = (inR(D.body).length ? inR(D.body) : D.body).slice(-1)[0]; P("scale", "--pill-body", "Gewicht", `${fmt(lb.w, 1)}<small>kg</small>`, lb.fp != null ? `Fett ${fmt(lb.fp, 1)} %` : "", null); }
+  S.innerHTML = (pills.length ? `<div class="pills">${pills.join("")}</div>` : "") + `<div class="grid ov">${html.join("")}</div>`;
+  scoreLine("ovScoreLine", endDay);
   if (!h.length && !tr.length && !wk.length) S.insertAdjacentHTML("afterbegin", `<div class="card" style="margin-bottom:14px"><div class="empty">Für ${single() ? "diesen Tag" : "diesen Zeitraum"} sind (noch) keine Daten vorhanden.</div></div>`);
 
   // Mini-Diagramme
@@ -1430,6 +1627,7 @@ function renderHealth() {
     <div class="grid">
       ${card("c6", "moon", "--sleep", "Schlafphasen", `<div class="chartbox" id="hSleep"></div><div class="legend">${[["Tief", "--deep"], ["Leicht", "--light"], ["REM", "--rem"], ["Wach", "--awake"]].map(([n, c]) => `<span><i style="background:var(${c})"></i>${n}</span>`).join("")}</div>`, "Minuten")}
       ${card("c6", "moon", "--sleep", "Schlafscore", `<div class="chartbox" id="hScore"></div>`, "0–100")}
+      ${card("c6", "clock", "--sleep", "Schlafenszeiten", sleepClock(h) || '<div class="empty">Keine Schlafzeiten im Zeitraum.</div>', rangeWord())}
       ${card("c6", "heart", "--heart", "Ruhepuls", `<div class="chartbox" id="hRhr"></div>`, "bpm")}
       ${card("c6", "shoe", "--steps", "Schritte", `<div class="chartbox" id="hSteps"></div>`, "gestrichelt: Ziel")}
       ${card("c6", "battery", "--bb", "Body Battery", `<div class="chartbox" id="hBb"></div>`, "Tief bis Hoch")}
@@ -1650,7 +1848,7 @@ function techHtml() {
     <div class="sysgrid">${(S.zeitplaene || []).map(z => `<div class="card sys"><div class="ch">${icBox("clock", "--s1")}<h3>${esc(z.name)}</h3></div>
       <dl><dt>Wann</dt><dd>${esc(z.wann)}</dd><dt>Startet</dt><dd><code>${esc(z.startet)}</code></dd><dt>Ablauf</dt><dd><ol style="margin:0;padding-left:18px">${z.schritte.map(x => `<li>${esc(x)}</li>`).join("")}</ol></dd></dl></div>`).join("")}</div>
     <h3 style="margin:22px 0 10px;font-size:16px">Dienste, Zugänge und Tokens</h3>
-    <div class="sysgrid">${(S.dienste || []).map(d => `<div class="card sys"><div class="ch">${icBox(/GitHub/.test(d.name) ? "sync" : /Garmin/.test(d.name) ? "heart" : /Speediance/.test(d.name) ? "dumbbell" : /Clockify/.test(d.name) ? "briefcase" : /LM Studio/.test(d.name) ? "bolt" : "grid", "--s1")}<h3>${esc(d.name)}</h3></div><dl>${rows(d)}</dl></div>`).join("")}</div>
+    <div class="sysgrid">${(S.dienste || []).map(d => `<div class="card sys"><div class="ch">${icBox(/GitHub/.test(d.name) ? "sync" : /Garmin/.test(d.name) ? "heart" : /Speediance/.test(d.name) ? "dumbbell" : /Clockify/.test(d.name) ? "briefcase" : /Withings/.test(d.name) ? "scale" : /LM Studio/.test(d.name) ? "bolt" : "grid", "--s1")}<h3>${esc(d.name)}</h3></div><dl>${rows(d)}</dl></div>`).join("")}</div>
     <h3 style="margin:22px 0 10px;font-size:16px">Verschlüsselung und Warnungen</h3>
     <div class="sysgrid">
       <div class="card sys"><dl><dt>Verfahren</dt><dd>${esc(V.verfahren)}</dd>
@@ -1674,14 +1872,15 @@ function renderSync() {
     statusHtml = `<span class="status ${cls}"><span class="dot" aria-hidden="true"></span>${txt}</span>`;
   }
   const rows = runs.slice(0, 30).map(r => {
-    const s = r.speediance || {}, g = r.garmin || {}, c = r.clockify;
+    const s = r.speediance || {}, g = r.garmin || {}, c = r.clockify, w = r.withings;
     const st = r.ok ? `<span class="status ok"><span class="dot"></span>OK</span>` : `<span class="status bad"><span class="dot"></span>Fehler</span>`;
     const msg = (r.meldungen || []).map(esc).join("<br>");
     return `<tr><td>${new Date(r.start).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" })}</td>
       <td>${fmt(r.dauer_s / 60, 1)} Min.</td>
       <td>${s.neu != null ? `${s.hochgeladen || 0} hochgeladen` + (s.fehler ? `, ${s.fehler} Fehler` : "") : "–"}</td>
       <td>${g.gebremst ? "gebremst" : g.tage != null ? `${g.tage} Tage, ${g.aktivitaeten} Akt.` : "–"}</td>
-      <td>${c ? (c.ok ? "OK" : "Fehler") : "–"}</td><td>${st}${msg ? `<div class="muted">${msg}</div>` : ""}</td></tr>`;
+      <td>${c ? (c.ok ? "OK" : "Fehler") : "–"}</td>
+      <td>${w ? (w.ok ? (w.neu ? `${w.neu} neu` : "OK") : "Fehler") : "–"}</td><td>${st}${msg ? `<div class="muted">${msg}</div>` : ""}</td></tr>`;
   }).join("");
   S.innerHTML = `
     <div class="tiles">
@@ -1690,16 +1889,17 @@ function renderSync() {
       ${tile("Trainings gesichert", fmt((D.trainingAll || D.training || []).length), "Speediance, gesamt")}
       ${tile("Garmin-Sicherung", D.status.garminBackupUntil ? "ab " + dd(D.status.garminBackupUntil) : "–", D.status.garminComplete ? "vollständig" : "Vergangenheit wird nachgeholt")}
       ${tile("Clockify-Export", D.status.clockifyLast ? dd(D.status.clockifyLast) : "–", "letzter Export")}
+      ${(D.body || []).length ? tile("Withings-Waage", dd(D.body[D.body.length - 1].d), `letzte Messung · ${fmt(D.body.length)} gesichert`) : ""}
       ${(() => { const td = tokenDays(); const e = D.status.tokenExpires;
         const cls = td == null ? "" : td < 0 || td <= 3 ? "bad" : td <= 14 ? "warn" : "ok";
         const v = td == null ? "–" : `<span class="status ${cls}"><span class="dot"></span>${td < 0 ? "abgelaufen" : td > 60 ? "noch " + Math.round(td / 30.4) + " Mt." : "noch " + td + " Tage"}</span>`;
         return tile("GitHub-Token", v, e ? "läuft ab am " + dd(e.slice(0, 10)) : "wird beim nächsten Upload gelesen"); })()}
     </div>
     <div class="card" style="margin-bottom:14px"><div class="ch">${icBox("book", "--s1")}<h3>Wie funktioniert das alles?</h3><span class="right"><button class="ghost" data-goto="help">Info &amp; Technik öffnen</button></span></div>
-      <div class="muted">Handbuch für dich und Systemkarte für Technik und KI: Garmin, Speediance, Clockify, GitHub, Tokens, Verschlüsselung.</div></div>
+      <div class="muted">Handbuch für dich und Systemkarte für Technik und KI: Garmin, Speediance, Clockify, Withings, GitHub, Tokens, Verschlüsselung.</div></div>
     <div class="card"><div class="ch">${icBox("sync", "--s1")}<h3>Letzte Läufe</h3><span class="right">alle 3 Std., solange der Laptop läuft</span></div>
-      <div class="tablewrap"><table><thead><tr><th>Zeitpunkt</th><th>Dauer</th><th>Speediance → Garmin</th><th>Garmin-Sicherung</th><th>Clockify</th><th>Status</th></tr></thead>
-      <tbody>${rows || `<tr><td colspan="6" class="empty">Noch keine Läufe protokolliert.</td></tr>`}</tbody></table></div></div>`;
+      <div class="tablewrap"><table><thead><tr><th>Zeitpunkt</th><th>Dauer</th><th>Speediance → Garmin</th><th>Garmin-Sicherung</th><th>Clockify</th><th>Withings</th><th>Status</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" class="empty">Noch keine Läufe protokolliert.</td></tr>`}</tbody></table></div></div>`;
 }
 
 unlockWithStoredKey();
