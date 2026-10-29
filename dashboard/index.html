@@ -186,7 +186,7 @@ main { padding: 18px 28px 80px; max-width: 1240px; width: 100%; }
 .segsvg .segl { font-size: 10.5px; fill: var(--muted); }
 .tiplegend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--muted); }
 .tiplegend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
-.tips .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
+.tips .more, .tipmini .more { margin-top: 10px; border: 0; background: transparent; color: var(--ink-2); font-size: 13px; text-decoration: underline; padding: 0; }
 /* ---------- Info & Technik */
 .sysgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; }
 @media (max-width: 560px) { .sysgrid { grid-template-columns: minmax(0, 1fr); } .sys dl { grid-template-columns: minmax(0, 1fr); gap: 0; } .sys dt { margin-top: 8px; font-size: 12.5px; } }
@@ -411,6 +411,49 @@ nav.bottom button svg { color: inherit; }
   .pill .pic { width: 38px; height: 38px; } .pill .pic svg { width: 19px; height: 19px; }
   .pill .pv { font-size: 21px; }
 }
+
+/* Übersicht: eine Kachel pro Thema */
+.ovnote { color: var(--muted); font-size: 12.5px; margin: 0 0 10px 2px; }
+.ovtiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.ovt { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px 12px; border-radius: 24px; background: var(--surface); box-shadow: var(--shadow);
+  color: inherit; text-decoration: none; min-width: 0; transition: transform .12s ease; }
+.ovt:hover { transform: translateY(-2px); }
+.ovt:focus-visible { outline: 2px solid var(--cc); outline-offset: 2px; }
+.ovt.wide { grid-column: span 2; }
+.ovt .oh { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.ovt .oh h3 { margin: 0; font-size: 15px; color: var(--cc); }
+.ovt .oh .go { margin-left: auto; color: var(--muted); font-size: 20px; line-height: 1; }
+.ovt .ob { font-size: 32px; font-weight: 750; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ovt .ob small { font-size: 15px; font-weight: 650; margin-left: 3px; color: var(--ink-2); }
+.ovt .os { font-size: 12.5px; color: var(--muted); }
+.ovt .dt { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.ovt .dt.up { color: var(--good-text); } .ovt .dt.down { color: var(--critical); }
+.ovt .osp { margin-top: auto; padding-top: 8px; }
+.ovt .spark { display: block; width: 100%; height: 34px; }
+.ovt .spark polyline { fill: none; stroke: var(--cc); stroke-width: 2.2; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.ovt .spark circle { fill: var(--cc); }
+.ovt .spark rect { fill: var(--cc); opacity: .8; }
+.ovt .spark.empty { height: 34px; }
+.ovt .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: 16px; }
+.ovt .trio span { display: block; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.ovt .trio b { font-size: 28px; }
+.ovt .trio i { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0; }
+@media (max-width: 1100px) { .ovtiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .ovtiles { gap: 10px; } .ovt { padding: 14px 14px 10px; border-radius: 20px; } .ovt .ob { font-size: 26px; } .ovt .trio b { font-size: 22px; } }
+.tipmini { background: var(--surface); box-shadow: var(--shadow); border-radius: 24px; padding: 16px 18px 12px; margin-bottom: 16px; }
+.tipmini .oh { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.tipmini .oh h3 { margin: 0; font-size: 15px; }
+.tipmini .oh .right { margin-left: auto; color: var(--muted); font-size: 12px; }
+.tipmini ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.tipmini li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; }
+.tipmini li i { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--tc); transform: translateY(-1px); }
+.tipmini li small { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; }
+.ovrange { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.ovrange[hidden] { display: none; }
+.ovrange button { border: 1px solid var(--ring); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 15px; font: 600 14px var(--font, inherit); cursor: pointer; }
+.ovrange button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.ovrange button:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+@media (max-width: 520px) { .ovrange { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px 10px; padding: 0 16px 4px; scrollbar-width: none; } .ovrange button { flex: none; } }
 </style>
 </head>
 <body>
@@ -460,6 +503,7 @@ nav.bottom button svg { color: inherit; }
       </div>
     </div>
 
+    <div id="ovRange" class="ovrange" role="group" aria-label="Zeitraum"></div>
     <div id="alerts"></div>
     <div id="tips"></div>
     <section data-tab="ov"></section>
@@ -594,7 +638,7 @@ function card(cls, iconName, cssVar, title, body, right = "") {
 
 // ================================================================ Zeitraum
 const PRESETS = [
-  ["today", "Heute"], ["yesterday", "Gestern"], ["thisWeek", "Diese Woche"], ["lastWeek", "Letzte Woche"],
+  ["last7", "Letzte 7 Tage"], ["today", "Heute"], ["yesterday", "Gestern"], ["thisWeek", "Diese Woche"], ["lastWeek", "Letzte Woche"],
   ["last2w", "Letzte 2 Wochen"], ["thisMonth", "Dieser Monat"], ["lastMonth", "Letzter Monat"],
   ["thisYear", "Dieses Jahr"], ["lastYear", "Letztes Jahr"], ["all", "Alles"],
 ];
@@ -605,6 +649,7 @@ function presetRange(key) {
     case "yesterday": { const x = addDays(t, -1); return { from: x, to: x, unit: "day" }; }
     case "thisWeek": return { from: weekStart(t), to: t, unit: "week" };
     case "lastWeek": { const w = addDays(weekStart(t), -7); return { from: w, to: addDays(w, 6), unit: "week" }; }
+    case "last7": return { from: addDays(t, -6), to: t, unit: "days7" };
     case "last2w": return { from: addDays(t, -13), to: t, unit: "days14" };
     case "thisMonth": return { from: iso(new Date(y, m, 1)), to: t, unit: "month" };
     case "lastMonth": return { from: iso(new Date(y, m - 1, 1)), to: iso(new Date(y, m, 0)), unit: "month" };
@@ -613,14 +658,7 @@ function presetRange(key) {
     default: return { from: "0000-01-01", to: "9999-12-31", unit: "all" };
   }
 }
-let R = (() => {
-  try {
-    const s = JSON.parse(ls.get("dash_range") || "null");
-    if (s && s.key === "custom" && s.from && s.to) return s;
-    if (s && PRESETS.some(p => p[0] === s.key)) return { key: s.key, ...presetRange(s.key) };
-  } catch (e) {}
-  return { key: "last2w", ...presetRange("last2w") };
-})();
+let R = { key: "last7", ...presetRange("last7") };  // beim Öffnen immer „Letzte 7 Tage“
 function setRange(r) { R = r; ls.set("dash_range", JSON.stringify(r)); render(); }
 const inR = (arr) => (arr || []).filter(x => x.d >= R.from && x.d <= R.to);
 const single = () => R.from === R.to;
@@ -1317,6 +1355,15 @@ function renderTips() {
   let list = r.tips;
   if (TIP_CATS[TAB]) list = list.filter(t => TIP_CATS[TAB].includes(t.cat));
   if (!list.length) { box.innerHTML = ""; return; }
+  if (TAB === "ov" && !tipsOpen) {
+    // Übersicht: nur eine ruhige Kachel mit den Titeln der wichtigsten Hinweise
+    const top = list.slice(0, 3);
+    box.innerHTML = `<div class="tipmini"><div class="oh">${icBox("bolt", "--s4")}<h3>Hinweise</h3><span class="right">${list.length} aktiv</span></div>
+      <ul>${top.map(t => `<li style="--tc:var(${t.tone})"><i></i><span><b>${esc(t.title)}</b> <small>${esc(t.cat)}</small></span></li>`).join("")}</ul>
+      <button class="more" id="tipsMore">${list.length > top.length ? `Alle ${list.length} Hinweise mit Erklärung` : "Mit Erklärung anzeigen"}</button></div>`;
+    $("tipsMore").onclick = () => { tipsOpen = true; renderTips(); };
+    return;
+  }
   const n = TAB === "ov" ? 3 : 2, shown = tipsOpen ? list : list.slice(0, n);
   const staleTxt = r.stale != null && r.stale >= 2 ? ` · neueste Garmin-Daten vom ${dd(addDays(todayIso(), -r.stale))}` : "";
   box.innerHTML = `<div class="tips"><div class="hd"><h2>${TAB === "ov" ? "Deine Hinweise" : "Hinweise"}</h2><span>berechnet beim letzten Abgleich, neueste Daten vom ${dd(r.end)}${staleTxt}</span></div>
@@ -1343,6 +1390,7 @@ function render() {
   SCOPE = { ov: [...(D.health || []), ...(D.training || [])], kraft: D.training, health: D.health, work: D.work, sync: null }[TAB] || null;
   if (SCOPE && !SCOPE.length) SCOPE = null;
   const [name2, dates2] = rangeLabel(); $("rangeName").textContent = name2; $("rangeDates").textContent = dates2;
+  renderQuickRange();
   renderAlerts();
   renderTips();
   $("rangeBtn").closest(".rangebar").style.visibility = TAB === "help" ? "hidden" : "";
@@ -1352,182 +1400,120 @@ const sec = (k) => document.querySelector(`section[data-tab="${k}"]`);
 const rangeWord = () => single() ? "am Tag" : "im Zeitraum";
 
 // ---------------------------------------------------------------- Übersicht
+const QUICK = [["last7", "Letzte 7 Tage"], ["thisWeek", "Diese Woche"], ["lastWeek", "Letzte Woche"], ["thisMonth", "Dieser Monat"], ["lastMonth", "Letzter Monat"], ["thisYear", "Dieses Jahr"]];
+function renderQuickRange() {  // gut sichtbare Zeitraum-Knöpfe ganz oben (nur Übersicht)
+  const box = $("ovRange");
+  box.hidden = TAB !== "ov";
+  if (box.hidden) return;
+  box.innerHTML = QUICK.map(([k, t]) => `<button data-qr="${k}"${R.key === k ? ' aria-pressed="true"' : ""}>${t}</button>`).join("")
+    + `<button data-qr="more"${QUICK.some(q => q[0] === R.key) ? "" : ' aria-pressed="true"'}>${QUICK.some(q => q[0] === R.key) ? "Anderer Zeitraum …" : esc(rangeLabel()[1])}</button>`;
+}
+$("ovRange").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-qr]"); if (!b) return;
+  if (b.dataset.qr === "more") { ev.stopPropagation(); scrollTo(0, 0); openPop(); return; }
+  setRange({ key: b.dataset.qr, ...presetRange(b.dataset.qr) });
+});
 function renderOverview() {
-  const D = DATA, h = inR(D.health), tr = inR(D.training), wk = inR(D.work);
-  const one = single(), day = one ? h[0] : null, curves = (one && D.curves && D.curves[R.from]) || {};
-  const nDays = effRange().days, g = grain();
-  const S = sec("ov");
-  const html = [];
+  // Ruhige Übersicht: eine Kachel pro Thema für den gewählten Zeitraum (Standard: letzte 7 Tage),
+  // verglichen mit dem gleich langen Zeitraum davor. Details stehen in den Reitern; ein Klick auf die Kachel führt dorthin.
+  const D = DATA, S = sec("ov");
+  const e = effRange(), W0 = e.from, E = e.to, n = e.days;
+  let P0, P1;
+  if (R.unit === "month" && R.key !== "custom") { const f = parse(W0); P0 = iso(new Date(f.getFullYear(), f.getMonth() - 1, 1)); P1 = addDays(W0, -1); }
+  else if (R.unit === "year") { const y = +W0.slice(0, 4) - 1; P0 = `${y}-01-01`; P1 = `${y}-12-31`; }
+  else { P1 = addDays(W0, -1); P0 = addDays(W0, -n); }
+  const VS = R.key === "all" ? null : n === 1 ? "Vortag" : R.unit === "week" || n === 7 ? "Vorwoche" : R.unit === "month" ? "Vormonat" : R.unit === "year" ? "Vorjahr" : "davor";
+  const inW = (arr) => (arr || []).filter(x => x.d >= W0 && x.d <= E), inP = (arr) => (arr || []).filter(x => x.d >= P0 && x.d <= P1);
+  const step = n <= 31 ? 1 : n <= 370 ? 7 : 30;
+  const chunks = []; for (let d = W0; d <= E; d = addDays(d, step)) chunks.push([d, addDays(d, step - 1)]);
+  const perDay = (arr, f) => chunks.map(([a, b]) => { const r = (arr || []).filter(x => x.d >= a && x.d <= b); return r.length ? f(r) : null; });
+  const AVG = (k) => (r) => avg(r.map(x => x[k]));
+  const CARDIO = new Set(["running", "trail_running", "treadmill_running", "cycling", "road_biking", "mountain_biking", "indoor_cycling", "e_bike_fitness",
+    "hiking", "lap_swimming", "open_water_swimming", "indoor_rowing", "rowing", "indoor_skiing", "cardio_training", "cardio", "elliptical", "stair_climbing"]);
+  const cardio = (D.activities || []).filter(a => CARDIO.has(a.type));
+  const delta = (now, before, unit, dec, goodUp) => {
+    if (!VS) return "";
+    if (now == null || before == null) return `<span class="dt">${VS}: –</span>`;
+    const dv = now - before, r = Math.round(dv * 10 ** dec) / 10 ** dec;
+    if (r === 0) return `<span class="dt">wie ${VS}</span>`;
+    const cls = goodUp == null ? "" : (dv > 0) === goodUp ? " up" : " down";
+    return `<span class="dt${cls}">${dv > 0 ? "▲" : "▼"} ${fmt(Math.abs(dv), dec)}${unit} ggü. ${VS}</span>`;
+  };
+  const spark = (vals, type = "line", lo = null, hi = null) => {
+    const v = vals.map(x => (x == null ? null : +x)), ok = v.filter(x => x != null);
+    if (!ok.length) return `<div class="spark empty"></div>`;
+    const mn = lo ?? Math.min(...ok), mx = hi ?? Math.max(...ok), rg = mx - mn || 1, w = 140, hgt = 34, n = v.length;
+    if (type === "bar") return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" aria-hidden="true">${v.map((x, i) => x == null || x === 0 ? "" :
+      `<rect x="${(i * w / n + (w / n) * 0.15).toFixed(1)}" y="${(hgt - Math.max(2, (x - Math.min(0, mn)) / (mx - Math.min(0, mn) || 1) * hgt)).toFixed(1)}" width="${Math.max(1.5, (w / n) * 0.7).toFixed(1)}" height="${Math.max(2, (x - Math.min(0, mn)) / (mx - Math.min(0, mn) || 1) * hgt).toFixed(1)}" rx="2"/>`).join("")}</svg>`;
+    const pts = v.map((x, i) => x == null ? null : [(i * w / Math.max(1, n - 1)), hgt - 3 - (x - mn) / rg * (hgt - 6)]).filter(Boolean);
+    return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}"/>${pts.length ? `<circle cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}" r="3"/>` : ""}</svg>`;
+  };
+  const T = (goto, ic, c, title, big, sub, dl, sp, wide = false) =>
+    `<a class="ovt${wide ? " wide" : ""}" href="#${goto}" data-goto="${goto}" style="--cc:var(${c})"><div class="oh">${icBox(ic, c)}<h3>${esc(title)}</h3><span class="go">›</span></div>
+      <div class="ob">${big}</div><div class="os">${sub}</div>${dl}<div class="osp">${sp}</div></a>`;
+  const tiles = [];
 
   // Schlaf
-  const sl = one ? day : null;
-  const score = one ? sl?.sleepScore : avg(h.map(x => x.sleepScore));
-  const sleepMin = one ? (sl?.sleepH != null ? sl.sleepH * 60 : null) : (avg(h.map(x => x.sleepH)) ?? null) * 60 || null;
-  const ph = { deep: one ? sl?.deep : avg(h.map(x => x.deep)), light: one ? sl?.light : avg(h.map(x => x.light)), rem: one ? sl?.rem : avg(h.map(x => x.rem)), awake: one ? sl?.awake : avg(h.map(x => x.awake)) };
-  const phTot = sum(Object.values(ph));
-  const Q = { EXCELLENT: "Ausgezeichnet", GOOD: "Gut", FAIR: "Mittelmässig", POOR: "Schlecht" };
-  const scoreTxt = one ? (Q[sl?.sleepQ] || "") : (score != null ? (score >= 90 ? "Ausgezeichnet" : score >= 80 ? "Gut" : score >= 60 ? "Mittelmässig" : "Schlecht") : "");
-  const endDay = one ? R.from : (h.length ? h[h.length - 1].d : R.to);
-  const showHyp = one && curves.sleep;
-  html.push(card("c8", "moon", "--sleep", "Schlaf", `
-    <div class="sleephead">
-      <div><div class="lb">${one ? "Schlafindex" : "Ø Schlafindex"}</div><div class="sx">${fmt(score)}</div>${scoreTxt ? `<span class="qchip${score != null && score < 80 ? " warn" : ""}">${esc(scoreTxt)}</span>` : ""}</div>
-      <div class="scoreline" id="ovScoreLine"></div>
-      <div class="dur"><div class="big">${sleepMin ? `${Math.floor(sleepMin / 60)}<small>h</small> ${pad2(Math.round(sleepMin % 60))}<small>min</small>` : "–"}</div>
-        <div class="muted">${one && sl?.bed ? `${sl.bed} – ${sl.wake}` : one ? "" : "Ø pro Nacht"}</div></div>
-    </div>
-    ${phTot && !showHyp ? `<div class="split">${[["deep", "--deep"], ["light", "--light"], ["rem", "--rem"], ["awake", "--awake"]].map(([k, c]) => `<div style="flex:${ph[k] || 0};background:var(${c})"></div>`).join("")}</div>
-    <div class="legend">${[["Tief", "deep", "--deep"], ["Leicht", "light", "--light"], ["REM", "rem", "--rem"], ["Wach", "awake", "--awake"]].map(([n, k, c]) => `<span><i style="background:var(${c})"></i>${n}<b>${ph[k] != null ? hm(ph[k]).replace(" h 0", " h ").replace(/^0 h /, "") : "–"}</b></span>`).join("")}</div>` : ""}
-    <div class="chartbox" style="height:${one ? 250 : 120}px;margin-top:14px" id="ovSleep"></div>`, one ? "Schlafindex: letzte 7 Tage" : "Schlafphasen " + GRAIN_TXT[g]));
+  const hW = inW(D.health), hP = inP(D.health);
+  const slW = avg(hW.map(x => x.sleepH)), slP = avg(hP.map(x => x.sleepH)), scW = avg(hW.map(x => x.sleepScore));
+  tiles.push(T("health", "moon", "--sleep", "Schlaf",
+    slW != null ? `${Math.floor(slW)}<small>h</small> ${pad2(Math.round((slW % 1) * 60))}<small>min</small>` : "–",
+    `Ø pro Nacht${scW != null ? ` · Schlafindex ${fmt(scW)}` : ""}`,
+    delta(slW != null ? slW * 60 : null, slP != null ? slP * 60 : null, " min", 0, true),
+    spark(perDay(D.health, AVG("sleepH")))));
 
   // Schritte
-  const steps = one ? day?.steps : avg(h.map(x => x.steps)), goal = one ? day?.goal : avg(h.map(x => x.goal));
-  const reached = h.filter(x => x.steps && x.goal && x.steps >= x.goal).length;
-  html.push(card("c4", "shoe", "--steps", "Schritte", `
-    <div class="ringrow">${ring(steps, goal || 10000, "--steps", 96, `<b style="font-size:18px">${goal ? fmt(Math.round(100 * (steps || 0) / goal)) + "%" : "–"}</b><span>vom Ziel</span>`)}
-      <div><div class="big">${fmt(steps)}</div><div class="muted">${one ? `Ziel ${fmt(goal)}` : `Ø pro Tag · Ziel ${reached}/${h.length} Tage`}</div>
-      <div class="kv"><div>Distanz<b>${fmt(one ? day?.km : sum(h.map(x => x.km)), 1)} km</b></div></div></div></div>
-    <div class="mini" id="ovSteps"></div>`));
+  const stW = avg(hW.map(x => x.steps)), stP = avg(hP.map(x => x.steps));
+  const reached = hW.filter(x => x.steps && x.goal && x.steps >= x.goal).length;
+  tiles.push(T("health", "shoe", "--steps", "Schritte", fmt(stW),
+    `Ø pro Tag · Ziel an ${reached} von ${hW.length} Tagen`, delta(stW, stP, "", 0, true),
+    spark(perDay(D.health, AVG("steps")), "bar")));
 
-  // Body Battery
-  const bbHi = one ? day?.bbHi : avg(h.map(x => x.bbHi)), bbLo = one ? day?.bbLo : avg(h.map(x => x.bbLo));
-  const bbNow = one ? (R.from === todayIso() ? day?.bbNow : day?.bbHi) : bbHi;
-  html.push(card("c4", "battery", "--bb", "Body Battery", `
-    <div class="ringrow">${ring(bbNow, 100, "--bb", 96, `<b>${fmt(bbNow)}</b><span>${one ? (R.from === todayIso() ? "aktuell" : "Höchstwert") : "Ø Hoch"}</span>`)}
-      <div class="kv" style="margin:0">${one ? `<div>Geladen<b>+${fmt(day?.bbUp)}</b></div><div>Verbraucht<b>−${fmt(day?.bbDown)}</b></div>` : ""}<div>${one ? "Tiefstwert" : "Ø Tief"}<b>${fmt(bbLo)}</b></div></div></div>
-    <div class="mini" id="ovBb"></div>`));
+  // Krafttraining
+  const kW = inW(D.training), kP = inP(D.training);
+  tiles.push(T("kraft", "dumbbell", "--kraft", "Krafttraining", `${fmt(kW.length)}<small>${kW.length === 1 ? "Training" : "Trainings"}</small>`,
+    `${rangeWord()} · ${fmt(sum(kW.map(x => x.vol)) / 1000, 1)} t bewegt`, delta(kW.length, kP.length, "", 0, true),
+    spark(perDay(D.training, r => sum(r.map(x => x.vol))), "bar")));
 
-  // Stress
-  const stress = one ? day?.stress : avg(h.map(x => x.stress));
-  const dist = ["stRest", "stLow", "stMed", "stHigh"].map(k => one ? day?.[k] : avg(h.map(x => x[k])));
-  const stTxt = stress == null ? "" : stress <= 25 ? "Ruhig" : stress <= 50 ? "Niedrig" : stress <= 75 ? "Mittel" : "Hoch";
-  html.push(card("c4", "wave", "--stress", "Stress", `
-    <div class="ringrow">${ring(stress, 100, "--stress", 96, `<b>${fmt(stress)}</b><span>${one ? "Ø Tag" : "Ø"}</span>`)}
-      <div style="flex:1"><div class="muted">${stTxt}</div>
-      ${dist.some(x => x != null) ? `<div class="split">${dist.map((v, i) => `<div style="flex:${v || 0};background:var(${["--s1", "--s4", "--s2", "--critical"][i]});opacity:${[0.55, 0.6, 0.85, 1][i]}"></div>`).join("")}</div>
-      <div class="legend">${["Ruhe", "Niedrig", "Mittel", "Hoch"].map((n, i) => `<span>${n}<b>${fmt(dist[i])}%</b></span>`).join("")}</div>` : ""}</div></div>
-    <div class="mini" id="ovStress"></div>`));
+  // Cardio
+  const cW = inW(cardio), cP = inP(cardio), cMin = sum(cW.map(a => a.min)) || 0, cMinP = sum(cP.map(a => a.min)) || 0;
+  const cKinds = [...new Set(cW.map(a => (ACT[a.type] || [, a.type])[1]))].slice(0, 3).join(", ");
+  tiles.push(T("health", "run", "--s2", "Cardio", `${fmt(cMin)}<small>min</small>`,
+    cW.length ? `${cW.length}× ${rangeWord()} · ${esc(cKinds)}` : `keine Einheit ${rangeWord()}`, delta(cMin, cMinP, " min", 0, true),
+    spark(perDay(cardio, r => sum(r.map(a => a.min))), "bar")));
 
-  // Herzfrequenz
-  const rhr = one ? day?.rhr : avg(h.map(x => x.rhr));
-  html.push(card("c4", "heart", "--heart", "Herzfrequenz", `
-    <div class="big">${fmt(rhr)}<small>bpm</small></div><div class="muted">${one ? "Ruhepuls" : "Ø Ruhepuls"}</div>
-    <div class="kv">${one ? `<div>Min.<b>${fmt(day?.hrMin)}</b></div><div>Max.<b>${fmt(day?.hrMax)}</b></div>` : `<div>tiefster Ruhepuls<b>${fmt(minOf(h.map(x => x.rhr)))}</b></div><div>höchster<b>${fmt(maxOf(h.map(x => x.rhr)))}</b></div>`}</div>
-    <div class="mini" id="ovHr"></div>`));
-
-  // Intensitätsminuten (Ziel pro Woche, anteilig)
-  let imRows = h, imGoal = 150;
-  if (one) { const ws = weekStart(R.from); imRows = (D.health || []).filter(x => x.d >= ws && x.d <= R.from); imGoal = day?.imGoal || 150; }
-  else imGoal = Math.round((avg(h.map(x => x.imGoal)) || 150) * nDays / 7);
-  const imVal = sum(imRows.map(x => (x.imM || 0) + 2 * (x.imV || 0)));
-  html.push(card("c4", "bolt", "--im", "Intensitätsminuten", `
-    <div class="ringrow">${ring(imVal, imGoal, "--im", 96, `<b>${fmt(imVal)}</b><span>von ${fmt(imGoal)}</span>`)}
-      <div class="kv" style="margin:0"><div>Mittel<b>${fmt(sum(imRows.map(x => x.imM)))} min</b></div><div>Hoch (×2)<b>${fmt(sum(imRows.map(x => x.imV)))} min</b></div></div></div>
-    <div class="muted" style="margin-top:8px">${one ? "Diese Woche bis zu diesem Tag" : "Ziel anteilig für " + nDays + " Tage"}</div>`));
-
-  // Kalorien
-  const kc = one ? day?.kcal : avg(h.map(x => x.kcal)), ka = one ? day?.kcalA : avg(h.map(x => x.kcalA));
-  html.push(card("c4", "flame", "--kcal", "Kalorien", `
-    <div class="big">${fmt(kc)}<small>kcal</small></div><div class="muted">${one ? "verbrannt" : "Ø pro Tag"}</div>
-    <div class="kv"><div>Aktiv<b>${fmt(ka)}</b></div><div>Grundumsatz<b>${fmt(kc != null && ka != null ? kc - ka : null)}</b></div></div>
-    <div class="mini" id="ovKcal"></div>`));
-
-  // Krafttraining mit Muskelkarte
-  const load = muscleLoad(tr), hf = heatFills(load);
-  const lastT = (D.training || []).slice(-1)[0];
-  html.push(card("c4", "dumbbell", "--kraft", "Krafttraining", `
-    <div class="ringrow"><div><div class="big">${fmt(tr.length)}</div><div class="muted">Trainings ${rangeWord()}</div>
-      <div class="kv"><div>Volumen<b>${fmt(sum(tr.map(x => x.vol)) / 1000, 1)} t</b></div><div>Sätze<b>${fmt(sum(tr.map(x => x.sets)))}</b></div></div></div>
-      <div style="flex:1">${bodyPair(hf.fills, hf.titles, true)}</div></div>
-    <div class="muted" style="margin-top:6px">Zuletzt: ${lastT ? `${esc(lastT.title)}, ${wd(lastT.d)} ${dd(lastT.d)}` : "–"}</div>`));
-
-  // Aktivitäten (Garmin + Speediance)
-  const actFrom = one ? addDays(R.from, -6) : R.from;
-  const inAct = (arr) => (arr || []).filter(x => x.d >= actFrom && x.d <= R.to);
-  const acts = [
-    ...inAct(D.activities).map(a => ({ ...a, kind: "garmin" })),
-    ...inAct(D.training).map(t => ({ d: t.d, t: t.t, kind: "kraft", name: t.title, min: t.min, vol: t.vol, w: t.w })),
-  ].sort((a, b) => (b.d + (b.t || "")).localeCompare(a.d + (a.t || ""))).slice(0, 8);
-  html.push(card(acts.length >= 5 ? "c8 rows2" : "c4", "pulse", "--s1", "Aktivitäten", actList(acts), one ? "letzte 7 Tage" : `${fmt(inR(D.activities).length + tr.length)} ${rangeWord()}`));
+  // Körper (Gewicht, Fett, Muskeln) – letzte Messung gegenüber etwa 30 Tagen davor
+  if ((D.body || []).length) {
+    const B = D.body.filter(x => x.d <= E), last = B[B.length - 1] || D.body[0];
+    const before = B.filter(x => x.d < W0), ref = before.length ? before[before.length - 1] : ([...B].reverse().find(x => x.d <= addDays(last.d, -28)) || B[0] || last);
+    const dd2 = (k, unit, dec) => last[k] == null || ref === last || ref[k] == null ? "" :
+      `<i>${last[k] - ref[k] > 0 ? "▲" : last[k] - ref[k] < 0 ? "▼" : "="} ${fmt(Math.abs(last[k] - ref[k]), dec)}${unit}</i>`;
+    const body = `<div class="trio">
+      <div><span>Gewicht</span><b>${fmt(last.w, 1)}<small>kg</small></b>${dd2("w", " kg", 1)}</div>
+      <div><span>Fettanteil</span><b>${fmt(last.fp, 1)}<small>%</small></b>${dd2("fp", " %", 1)}</div>
+      <div><span>Muskeln</span><b>${fmt(last.mm, 1)}<small>kg</small></b>${dd2("mm", " kg", 1)}</div></div>`;
+    const B90 = (inW(D.body).length > 1 ? inW(D.body) : B.filter(x => x.d >= addDays(last.d, -90)));
+    tiles.push(T("health", "scale", "--weight", "Körper", body,
+      `letzte Messung ${dd(last.d)}${ref !== last ? ` · Veränderung seit ${dd(ref.d)}` : ""}`, "",
+      spark(B90.map(x => x.w)), true));
+  }
 
   // Arbeitszeit
-  const hours = sum(wk.map(x => x.h));
-  html.push(card("c4", "briefcase", "--work", "Arbeitszeit", `
-    <div class="big">${fmt(hours, 1)}<small>h</small></div><div class="muted">${rangeWord()}${one ? "" : ` · Ø ${fmt(hours / Math.max(1, nDays / 7), 1)} h pro Woche`}</div>
-    <div class="mini" id="ovWork"></div>`));
+  const wW = sum(inW(D.work).map(x => x.h)) || 0, wP = sum(inP(D.work).map(x => x.h)) || 0;
+  tiles.push(T("work", "briefcase", "--work", "Arbeitszeit", `${fmt(wW, 1)}<small>h</small>`,
+    rangeWord(), delta(wW, wP, " h", 1, null), spark(perDay(D.work, r => sum(r.map(x => x.h))), "bar")));
 
-  // Stimmung (Tagebuch, nur Zahlen)
+  // Stimmung
   if (D.tagebuch || (D.mood || []).length) {
-    const md = inR(D.mood), mv = avg(md.map(x => x.m));
-    const mTxt = mv == null ? "" : mv >= 4.5 ? "sehr gut" : mv >= 3.5 ? "gut" : mv >= 2.5 ? "okay" : mv >= 1.5 ? "eher schlecht" : "schlecht";
-    html.push(card("c4", "smile", "--mood", "Stimmung", md.length ? `
-      <div class="ringrow">${ring(mv, 5, "--mood", 96, `<b>${fmt(mv, 1)}</b><span>${one ? "von 5" : "Ø von 5"}</span>`)}
-        <div><div class="muted">${mTxt}</div><div class="kv"><div>Energie<b>${fmt(avg(md.map(x => x.e)), 1)}</b></div><div>Anspannung<b>${fmt(avg(md.map(x => x.a)), 1)}</b></div></div></div></div>
-      <div class="mini" id="ovMood"></div>`
-      : `<div class="muted">Keine Tagebuch-Einträge ${rangeWord()}.</div>`, `<a href="../tagebuch/" style="color:inherit">Tagebuch öffnen ↗</a>`));
+    const mW = inW(D.mood), mP = inP(D.mood), mv = avg(mW.map(x => x.m));
+    tiles.push(T("health", "smile", "--mood", "Stimmung", mv != null ? `${fmt(mv, 1)}<small>von 5</small>` : "–",
+      mW.length ? `Energie ${fmt(avg(mW.map(x => x.e)), 1)} · Anspannung ${fmt(avg(mW.map(x => x.a)), 1)}` : `keine Einträge ${rangeWord()}`,
+      delta(mv, avg(mP.map(x => x.m)), "", 1, true), spark(perDay(D.mood, AVG("m")), "line", 1, 5)));
   }
 
-  // Körper (Withings)
-  if ((D.body || []).length) {
-    const br = inR(D.body), last = (br.length ? br : D.body)[(br.length ? br : D.body).length - 1];
-    html.push(card("c4", "scale", "--weight", "Körper", `
-      <div class="big">${fmt(last.w, 1)}<small>kg</small></div>
-      <div class="muted">${br.length ? (one ? "gemessen " + last.t : `${br.length} Messung${br.length > 1 ? "en" : ""} ${rangeWord()}`) : "letzte Messung " + dd(last.d)}</div>
-      <div class="kv">${last.fp != null ? `<div>Fett<b>${fmt(last.fp, 1)} %</b></div>` : ""}${last.mm != null ? `<div>Muskeln<b>${fmt(last.mm, 1)} kg</b></div>` : ""}</div>
-      <div class="mini" id="ovBody"></div>`, `<a href="#health" data-goto="health" style="color:inherit">Details</a>`));
-  }
+  const span = n === 1 ? `${wd(W0)}, ${dd(W0)}` : `${ddShort(W0)} – ${dd(E)}`;
+  S.innerHTML = `<div class="ovnote">${span}${VS ? ` · verglichen mit ${n === 1 ? dd(P0) : `${ddShort(P0)} – ${dd(P1)}`}` : ""} · Kachel antippen für Details</div><div class="ovtiles">${tiles.join("")}</div>`;
 
-  // Atmung
-  html.push(card("c4", "lungs", "--resp", "Atmung", `
-    <div class="kv" style="margin-top:0"><div>${one ? "" : "Ø "}wach<b>${fmt(one ? day?.resp : avg(h.map(x => x.resp)), 0)} Atemzüge/min</b></div>
-    <div>${one ? "" : "Ø "}Schlaf<b>${fmt(one ? day?.respS : avg(h.map(x => x.respS)), 0)} Atemzüge/min</b></div></div>
-    <div class="mini" id="ovResp"></div>`));
-
-  // Kacheln oben (wie Google Health): Füllstand = Anteil am Ziel
-  const pills = [];
-  const P = (ic, c, l, v, sub, frac) => pills.push(`<div class="pill" style="--pc:var(${c})">${frac != null && !isNaN(frac) ? `<div class="pfill${frac >= 0.98 ? " full" : ""}" style="width:${Math.max(6, Math.min(100, frac * 100)).toFixed(1)}%"></div>` : ""}<span class="pic">${icon(ic)}</span><div class="pt"><div class="pl">${l}</div><div class="pv">${v}</div>${sub ? `<div class="ps">${sub}</div>` : ""}</div></div>`);
-  if (steps != null) P("shoe", "--pill-steps", "Schritte", fmt(steps), goal ? `${fmt(100 * steps / goal)} % vom Ziel` : "", goal ? steps / goal : null);
-  if (bbNow != null) P("battery", "--pill-bb", "Tagesform", fmt(bbNow), "Body Battery", bbNow / 100);
-  if (sleepMin) P("moon", "--pill-sleep", "Schlaf", `${Math.floor(sleepMin / 60)}<small>h</small> ${pad2(Math.round(sleepMin % 60))}<small>m</small>`, score != null ? `${fmt(score)} · ${esc(scoreTxt)}` : "", score != null ? score / 100 : null);
-  if (rhr != null) P("heart", "--pill-heart", "Ruhepuls", `${fmt(rhr)}<small>bpm</small>`, one ? "" : "Ø im Zeitraum", null);
-  if ((D.body || []).length) { const lb = (inR(D.body).length ? inR(D.body) : D.body).slice(-1)[0]; P("scale", "--pill-body", "Gewicht", `${fmt(lb.w, 1)}<small>kg</small>`, lb.fp != null ? `Fett ${fmt(lb.fp, 1)} %` : "", null); }
-  S.innerHTML = (pills.length ? `<div class="pills">${pills.join("")}</div>` : "") + `<div class="grid ov">${html.join("")}</div>`;
-  scoreLine("ovScoreLine", endDay);
-  if (!h.length && !tr.length && !wk.length) S.insertAdjacentHTML("afterbegin", `<div class="card" style="margin-bottom:14px"><div class="empty">Für ${single() ? "diesen Tag" : "diesen Zeitraum"} sind (noch) keine Daten vorhanden.</div></div>`);
-
-  // Mini-Diagramme
-  if (one) {
-    if (curves.sleep) hypnogram("ovSleep", curves.sleep, day?.bed, day?.wake);
-    else $("ovSleep").innerHTML = '<div class="empty">Für ältere Tage speichert Garmin nur die Summen.</div>';
-    const T = Array.from({ length: 96 }, (_, i) => `${pad2(Math.floor(i / 4))}:${pad2((i % 4) * 15)}`);
-    curveOr("ovHr", curves.hr, T, "--heart", "bpm", false);
-    curveOr("ovBb", curves.bb, T, "--bb", "", true);
-    curveOr("ovStress", curves.st, T, "--stress", "", true, "bar");
-    const h7 = (D.health || []).filter(x => x.d > addDays(R.from, -7) && x.d <= R.from);
-    const L7 = h7.map(x => wd(x.d)), T7 = h7.map(x => `${wd(x.d)} ${dd(x.d)}`);
-    chart("ovSteps", { type: "bar", labels: L7, tipLabels: T7, series: [{ v: h7.map(x => x.steps), color: "--steps" }], mini: true });
-    chart("ovKcal", { type: "stack", labels: L7, tipLabels: T7, unit: "kcal", series: [{ name: "Grund", v: h7.map(x => x.kcal != null && x.kcalA != null ? x.kcal - x.kcalA : null), color: "--grid" }, { name: "Aktiv", v: h7.map(x => x.kcalA), color: "--kcal" }], mini: true });
-    chart("ovResp", { type: "line", labels: L7, tipLabels: T7, series: [{ v: h7.map(x => x.resp), color: "--resp", name: "wach" }, { v: h7.map(x => x.respS), color: "--sleep", name: "Schlaf" }], mini: true, zero: false });
-    const ww = (D.work || []).filter(x => x.d === R.from);
-    chart("ovWork", { type: "hbar", labels: ww.map(x => x.p), series: [{ v: ww.map(x => x.h), color: "--work" }], dec: 1 });
-    $("ovWork").style.height = Math.max(30, ww.length * 26) + "px";
-  } else {
-    const B = buckets(h), L = B.map(b => b.label);
-    const a = (k) => B.map(b => avg(b.rows.map(x => x[k])));
-    chart("ovSleep", { type: "stack", labels: L, unit: "min", series: [["Tief", "deep", "--deep"], ["Leicht", "light", "--light"], ["REM", "rem", "--rem"], ["Wach", "awake", "--awake"]].map(([n, k, c]) => ({ name: n, v: a(k), color: c })), mini: false });
-    chart("ovSteps", { type: "bar", labels: L, series: [{ v: a("steps"), color: "--steps", name: "Schritte" }], mini: true });
-    chart("ovBb", { type: "range", labels: L, series: [{ v: B.map(b => { const lo = avg(b.rows.map(x => x.bbLo)), hi = avg(b.rows.map(x => x.bbHi)); return lo == null ? null : [lo, hi]; }), color: "--bb" }], mini: true, yMax: 100 });
-    chart("ovStress", { type: "bar", labels: L, series: [{ v: a("stress"), color: "--stress" }], mini: true, yMax: 100 });
-    chart("ovHr", { type: "line", labels: L, series: [{ v: a("rhr"), color: "--heart" }], unit: "bpm", mini: true, zero: false, area: true });
-    chart("ovKcal", { type: "stack", labels: L, unit: "kcal", series: [{ name: "Grund", v: B.map(b => avg(b.rows.map(x => x.kcal != null && x.kcalA != null ? x.kcal - x.kcalA : null))), color: "--grid" }, { name: "Aktiv", v: a("kcalA"), color: "--kcal" }], mini: true });
-    chart("ovResp", { type: "line", labels: L, series: [{ v: a("resp"), color: "--resp", name: "wach" }, { v: a("respS"), color: "--sleep", name: "Schlaf" }], mini: true, zero: false });
-    if ($("ovBody")) { const BB = buckets(inR(D.body)); chart("ovBody", { type: "line", labels: BB.map(b => b.label), unit: "kg", dec: 1, zero: false, mini: true, connect: true,
-      series: [{ v: BB.map(b => avg(b.rows.map(x => x.w))), color: "--weight", name: "Gewicht" }] }); }
-    if ($("ovMood")) { const BM = buckets(inR(D.mood)).filter(b => b.rows.length); chart("ovMood", { type: "line", labels: BM.map(b => b.label), unit: "", dec: 1, zero: false, yMin: 1, yMax: 5, mini: true,
-      series: [{ v: BM.map(b => avg(b.rows.map(x => x.m))), color: "--mood", name: "Stimmung" }] }); }
-    const BW = buckets(wk);
-    chart("ovWork", { type: "bar", labels: BW.map(b => b.label), unit: "h", dec: 1, series: [{ v: BW.map(b => sum(b.rows.map(x => x.h)) || null), color: "--work" }], mini: true });
-  }
 }
 function curveOr(id, data, labels, color, unit, zero, type = "line") {
   if (!data || !data.some(v => v != null)) { $(id).innerHTML = '<div class="muted" style="padding-top:20px">Kein Tagesverlauf gespeichert.</div>'; return; }
