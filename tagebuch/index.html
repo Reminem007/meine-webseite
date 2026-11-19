@@ -137,6 +137,10 @@ input[type=date], input[type=time] { padding: 6px 8px; border-radius: 10px; bord
 .replybox textarea { min-height: 84px; font-size: 15.5px; }
 .replybox .row { align-items: center; }
 .replybox .primary { padding: 9px 16px; }
+.akte textarea { min-height: 220px; font-size: 14.5px; line-height: 1.5; margin-top: 6px; }
+.akte .row { margin-top: 8px; align-items: center; flex-wrap: wrap; }
+.akte .primary { padding: 8px 14px; font-size: 14.5px; }
+.akte h4 { margin: 16px 0 2px; font-size: 15px; }
 .note { white-space: pre-wrap; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink); margin-top: 4px; }
 .rtag { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); font-weight: 600; }
 .aiopt { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
@@ -250,15 +254,25 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
           <dd>Du schreibst einen Eintrag, der Begleiter antwortet. Unter seiner Antwort kannst du zurückschreiben, er sieht dann den ganzen Verlauf. Jeder neue Eintrag beginnt einen neuen Verlauf. Die Antworten kommen verzögert, nie sofort. In einer Krise darum nicht auf ihn warten: <b>143</b> (Die Dargebotene Hand, auch Chat auf 143.ch), im Notfall <b>144</b>.</dd>
           <dt>Grenzen</dt>
           <dd>Ein kleines Modell auf dem Laptop: Es kann sich irren, Dinge missverstehen oder sich wiederholen. Halten Beschwerden länger an, ist eine Fachperson der richtige Ort, zum Beispiel über die Hausärztin oder den Hausarzt.</dd>
-          <dt>Seine Notiz</dt>
-          <dd id="noteBox"></dd>
         </dl>
+      </div>
+      <div class="card info akte">
+        <h3>Die Akte des Begleiters</h3>
+        <div class="sub">Was er bei jeder Antwort über dich weiss. Verschlüsselt wie deine Einträge.</div>
+        <h4>Über mich <span class="sub" style="font-weight:400">schreibst du</span></h4>
+        <div class="sub">Was ein Therapeut im ersten Gespräch fragen würde. Gilt für jede Antwort, auch was Ton und Wünsche betrifft.</div>
+        <textarea id="aboutText" aria-label="Über mich" placeholder="Noch leer. Mit „Leitfragen einfügen“ geht es leichter."></textarea>
+        <div class="row"><span class="sub grow" id="aboutState" style="font-size:12.5px"></span><button class="link" id="aboutTpl" type="button">Leitfragen einfügen</button><button class="primary" id="aboutSave" type="button">Speichern</button></div>
+        <h4>Fallverständnis <span class="sub" style="font-weight:400">führt der Begleiter</span></h4>
+        <div class="sub">Anliegen, Muster, Stärken und welche Übungen was gebracht haben. Steht etwas Falsches drin, korrigier es direkt.</div>
+        <textarea id="noteText" aria-label="Fallverständnis" placeholder="Noch leer. Entsteht nach der ersten Antwort."></textarea>
+        <div class="row"><span class="sub grow" id="noteState" style="font-size:12.5px"></span><button class="link" id="noteDel" type="button" style="color:var(--critical)">Löschen</button><button class="primary" id="noteSave" type="button">Korrektur speichern</button></div>
       </div>
       <div class="card info">
         <h3>Wo liegen meine Tagebuch-Daten?</h3>
         <dl>
           <dt>Einträge und Briefwechsel</dt>
-          <dd>Im <b>privaten</b> GitHub-Repository <code>Reminem007/tagebuch</code>, jeder Eintrag und jede deiner Antworten als eigene Datei in <code>eintraege/</code>, die Antworten des Begleiters in <code>antworten/</code>, seine Notiz in <code>begleiter/</code>. Alles verschlüsselt, schon auf diesem Gerät, bevor es gesendet wird. GitHub sieht nur Zeichensalat.</dd>
+          <dd>Im <b>privaten</b> GitHub-Repository <code>Reminem007/tagebuch</code>, jeder Eintrag und jede deiner Antworten als eigene Datei in <code>eintraege/</code>, die Antworten des Begleiters in <code>antworten/</code>, seine Akte in <code>begleiter/</code>. Alles verschlüsselt, schon auf diesem Gerät, bevor es gesendet wird. GitHub sieht nur Zeichensalat.</dd>
           <dt>Sicherheitskopie</dt>
           <dd>Auf deinem Laptop, bei jedem Abgleich (alle 15 Min., solange er läuft): <code>C:\Users\remyn\AppData\Local\Automatisierung\speediance2garmin\tagebuch_kopie\</code>. Ebenfalls verschlüsselt. Gelöschte Einträge landen dort in <code>_geloescht\</code>. Dieselbe verschlüsselte Kopie liegt zusätzlich im Drive unter <code>96_daten_exporte\Tagebuch Sicherung (verschluesselt)\</code> und kommt so mit auf kDrive und die SSD. Dort liegt auch <code>Tagebuch_lesen.html</code>: liest die Sicherung offline, ohne GitHub.</dd>
           <dt>Begleiter</dt>
@@ -301,7 +315,7 @@ const ls = {
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
 const K_KEY = "tb_key_v1", K_CACHE = "tb_cache_v1", K_QUEUE = "tb_queue_v1", K_DRAFT = "tb_draft_v1";
-let KEY = null, CFG = null, ENTRIES = new Map(), ANSWERS = new Map(), EDIT = null, NOTE = null;
+let KEY = null, CFG = null, ENTRIES = new Map(), ANSWERS = new Map(), EDIT = null, NOTE = null, ABOUT = null;
 const REPLY_DRAFT = new Map();   // angefangene Antworten pro Verlauf (nur im Speicher)
 const KRISE = /suizid|umbring|nicht mehr leben|nicht mehr da sein|nicht mehr aufwachen|selbstverletz|ritzen|sterben will|will sterben|keinen sinn mehr|alles beenden|mich töten|mich toeten|das leben nehmen|wozu das alles noch/i;
 const newId = () => b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[+/=]/g, c => ({ "+": "x", "/": "y", "=": "" }[c]));
@@ -415,13 +429,14 @@ async function loadEntries() {
     let i = 0;
     const worker = async () => { while (i < todo.length) { const x = todo[i++]; cache[x.sha] = await blob(x.sha); } };
     await Promise.all(Array.from({ length: 6 }, worker));
-    ENTRIES = new Map(); ANSWERS = new Map(); NOTE = null;
+    ENTRIES = new Map(); ANSWERS = new Map(); NOTE = null; ABOUT = null;
     for (const x of remote) {
       keep[x.sha] = cache[x.sha];
       try {
         const e = await dec(cache[x.sha]); e.path = x.path; e.sha = x.sha;
         if (x.path.startsWith("antworten/")) ANSWERS.set(e.id, e);
-        else if (x.path.startsWith("begleiter/")) NOTE = e;
+        else if (x.path === "begleiter/ueber_mich.json") ABOUT = e;
+        else if (x.path === "begleiter/notiz.json") NOTE = e;
         else ENTRIES.set(e.id, e);
       } catch (err) { /* fremde Datei */ }
     }
@@ -430,7 +445,7 @@ async function loadEntries() {
     setStatus(queueLen() ? `${queueLen()} wartet` : "gespeichert", queueLen() ? "warn" : "");
   } catch (e) {
     // offline: aus dem Cache anzeigen
-    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.notiz) NOTE = x; else if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
+    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.ueber_mich) ABOUT = x; else if (x.notiz) NOTE = x; else if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
     setStatus(navigator.onLine ? "Fehler" : "offline", navigator.onLine ? "bad" : "warn");
     if (navigator.onLine) toast(e.message);
   }
@@ -694,18 +709,55 @@ $("entries").addEventListener("click", async (ev) => {
   openId = openId === e.id ? null : e.id; renderList();
 });
 
-// ============================================================ Begleiter-Notiz (Info)
+// ============================================================ Akte des Begleiters (Info)
+const LEITFRAGEN = `Meine Lebenssituation (Arbeit, Studium, Beziehung, Familie, Wohnen):
+
+Was mich typischerweise stresst:
+
+Was mir guttut und Kraft gibt:
+
+Wofür ich den Begleiter nutzen will:
+
+Woran ich merken würde, dass es mir besser geht:
+
+Wie der Begleiter mit mir reden soll (Ton, Art):
+
+Was ich nicht will:
+`;
+const DIRTY = { about: false, note: false };
 function renderInfo() {
-  $("noteBox").innerHTML = NOTE && NOTE.text
-    ? `Was sich der Begleiter aus euren Briefen merkt (verschlüsselt, nur er und du sehen sie):<div class="note">${esc(NOTE.text)}</div>
-       <div class="row" style="margin-top:6px"><span class="sub grow" style="font-size:12.5px">Stand ${fmtWhen(NOTE.updated)}, ${NOTE.nr || 1}× nachgeführt</span><button class="link" id="noteDel">Notiz löschen</button></div>`
-    : "Noch keine. Sie entsteht nach der ersten Antwort und hält fest, worum es geht, was half und welche Übung vereinbart ist.";
-  const b = $("noteDel");
-  if (b) b.onclick = async () => {
-    if (!confirm("Notiz löschen? Der Begleiter beginnt dann ohne Vorwissen. Auf dem Laptop bleibt eine verschlüsselte Kopie in _geloescht.")) return;
-    try { await delFile(NOTE.path, NOTE.sha); NOTE = null; toast("Notiz gelöscht"); renderInfo(); } catch (e) { toast(e instanceof TypeError ? "Dafür braucht es Internet." : e.message); }
-  };
+  if (!DIRTY.about) $("aboutText").value = ABOUT?.text || "";
+  $("aboutState").textContent = DIRTY.about ? "nicht gespeichert" : ABOUT?.updated ? `gespeichert ${fmtWhen(ABOUT.updated)}` : "";
+  $("aboutTpl").hidden = !!$("aboutText").value.trim();
+  if (!DIRTY.note) $("noteText").value = NOTE?.text || "";
+  $("noteText").disabled = !NOTE;
+  $("noteSave").hidden = $("noteDel").hidden = !NOTE;
+  $("noteState").textContent = DIRTY.note ? "nicht gespeichert" : NOTE ? `Stand ${fmtWhen(NOTE.updated)}${NOTE.korrigiert ? ", von dir korrigiert" : `, ${NOTE.nr || 1}× nachgeführt`}` : "";
 }
+$("aboutText").addEventListener("input", () => { DIRTY.about = true; $("aboutState").textContent = "nicht gespeichert"; });
+$("noteText").addEventListener("input", () => { DIRTY.note = true; $("noteState").textContent = "nicht gespeichert"; });
+$("aboutTpl").addEventListener("click", () => { const ta = $("aboutText"); ta.value = LEITFRAGEN; DIRTY.about = true; $("aboutTpl").hidden = true; ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.indexOf("\n") + 1; });
+async function saveAkte(path, obj, old, btn) {
+  btn.disabled = true;
+  try { const sha = await putFile(path, await enc(obj), old?.sha); return { ...obj, path, sha }; }
+  catch (e) { toast(e instanceof TypeError ? "Dafür braucht es Internet." : e.message); return null; }
+  finally { btn.disabled = false; }
+}
+$("aboutSave").addEventListener("click", async () => {
+  const text = $("aboutText").value.trim();
+  const r = await saveAkte("begleiter/ueber_mich.json", { v: 1, id: "ueber_mich", ueber_mich: true, text, updated: new Date().toISOString() }, ABOUT, $("aboutSave"));
+  if (r) { ABOUT = r; DIRTY.about = false; toast("Gespeichert ✓ Gilt ab der nächsten Antwort."); renderInfo(); }
+});
+$("noteSave").addEventListener("click", async () => {
+  if (!NOTE) return;
+  const r = await saveAkte("begleiter/notiz.json", { ...NOTE, path: undefined, sha: undefined, text: $("noteText").value.trim(), korrigiert: true, updated: new Date().toISOString() }, NOTE, $("noteSave"));
+  if (r) { NOTE = r; DIRTY.note = false; toast("Korrektur gespeichert ✓"); renderInfo(); }
+});
+$("noteDel").addEventListener("click", async () => {
+  if (!NOTE || !confirm("Fallverständnis löschen? Der Begleiter beginnt dann ohne Vorwissen (dein „Über mich“ bleibt). Auf dem Laptop bleibt eine verschlüsselte Kopie in _geloescht.")) return;
+  try { await delFile(NOTE.path, NOTE.sha); NOTE = null; DIRTY.note = false; toast("Gelöscht"); renderInfo(); }
+  catch (e) { toast(e instanceof TypeError ? "Dafür braucht es Internet." : e.message); }
+});
 
 // ============================================================ Verlauf
 let tDays = 30;
