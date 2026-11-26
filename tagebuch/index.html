@@ -146,6 +146,11 @@ input[type=date], input[type=time] { padding: 6px 8px; border-radius: 10px; bord
 .akte .row { margin-top: 8px; align-items: center; flex-wrap: wrap; }
 .akte .primary { padding: 8px 14px; font-size: 14.5px; }
 .akte h4 { margin: 16px 0 2px; font-size: 15px; }
+.ged { border-top: 1px solid var(--line); padding: 10px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: start; }
+.ged b { font-size: 13px; color: var(--muted); font-weight: 600; }
+.ged p { margin: 2px 0 0; font-size: 14px; line-height: 1.45; }
+.ged small { color: var(--muted); font-size: 12.5px; }
+.ged.aus p { color: var(--muted); text-decoration: line-through; }
 .note { white-space: pre-wrap; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink); margin-top: 4px; }
 .rtag { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); font-weight: 600; }
 .aiopt { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
@@ -240,7 +245,6 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
           <button class="primary" id="saveBtn">Speichern</button>
         </div>
       </div>
-      <div class="help" id="helpBox">Wenn es dir gerade nicht gut geht, rede mit jemandem. <b>Die Dargebotene Hand: Telefon 143</b> (rund um die Uhr, auch Chat auf 143.ch). Im Notfall: <b>144</b>.</div>
     </section>
 
     <!-- Einträge -->
@@ -270,7 +274,7 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
           <dt>Was er ist</dt>
           <dd>Ein Gesprächsbegleiter nach kognitiver Verhaltenstherapie (KVT), ergänzt durch Achtsamkeit und Akzeptanz. Er spiegelt, stellt eine Frage pro Brief, schlägt höchstens eine kleine Übung vor und hilft, Gedanken zu prüfen, statt dir einfach recht zu geben. Er ist kein Therapeut, stellt keine Diagnosen und ersetzt keine Behandlung.</dd>
           <dt>So läuft der Briefwechsel</dt>
-          <dd>Du schreibst einen Eintrag, der Begleiter antwortet. Unter seiner Antwort kannst du zurückschreiben, er sieht dann den ganzen Verlauf. Wenn du Zeit hast, startest du beim Schreiben eine <b>Sitzung</b>: etwa 10 Minuten, aufgebaut wie eine kleine Therapiestunde, mit einer Übung zum Schluss. Vor jeder Antwort überlegt er sich zuerst, was los ist und was hilft, und schaut in deine früheren Einträge. Die Antworten kommen verzögert, nie sofort. In einer Krise darum nicht auf ihn warten: <b>143</b> (Die Dargebotene Hand, auch Chat auf 143.ch), im Notfall <b>144</b>.</dd>
+          <dd>Du schreibst einen Eintrag, der Begleiter antwortet. Unter seiner Antwort kannst du zurückschreiben, er sieht dann den ganzen Verlauf. Wenn du Zeit hast, startest du beim Schreiben eine <b>Sitzung</b>: etwa 10 Minuten, aufgebaut wie eine kleine Therapiestunde, mit einer Übung zum Schluss. Vor jeder Antwort überlegt er sich zuerst, was los ist und was hilft, und schaut in deine früheren Einträge. Die Antworten kommen nach ein paar Minuten, nie sofort; oben in der Antwortbox siehst du, ob er gerade schreibt oder der Laptop aus ist.</dd>
           <dt>Grenzen</dt>
           <dd>Ein kleines Modell auf dem Laptop: Es kann sich irren, Dinge missverstehen oder sich wiederholen. Halten Beschwerden länger an, ist eine Fachperson der richtige Ort, zum Beispiel über die Hausärztin oder den Hausarzt.</dd>
         </dl>
@@ -286,6 +290,18 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
         <div class="sub">Anliegen, Muster, Stärken und welche Übungen was gebracht haben. Steht etwas Falsches drin, korrigier es direkt.</div>
         <textarea id="noteText" aria-label="Fallverständnis" placeholder="Noch leer. Entsteht nach der ersten Antwort."></textarea>
         <div class="row"><span class="sub grow" id="noteState" style="font-size:12.5px"></span><button class="link" id="noteDel" type="button" style="color:var(--critical)">Löschen</button><button class="primary" id="noteSave" type="button">Korrektur speichern</button></div>
+      </div>
+      <div class="card info akte">
+        <h3>Mein Plan für schwere Momente</h3>
+        <div class="sub">Dein eigener Plan, wie ihn Therapeuten mit ihren Klienten erarbeiten: was du an dir bemerkst, was dir hilft, wen du anrufen kannst. Der Begleiter kennt ihn und erinnert dich daran, wenn es passt.</div>
+        <textarea id="planText" aria-label="Plan für schwere Momente" placeholder="Noch leer. Mit „Leitfragen einfügen“ geht es leichter."></textarea>
+        <div class="row"><span class="sub grow" id="planState" style="font-size:12.5px"></span><button class="link" id="planTpl" type="button">Leitfragen einfügen</button><button class="primary" id="planSave" type="button">Speichern</button></div>
+      </div>
+      <div class="card info akte">
+        <h3>Sein Gedächtnis</h3>
+        <div class="sub">Was er sich zu deinen Einträgen gemerkt hat. Einträge, die er nie verwenden soll, schliesst du hier aus.</div>
+        <div class="row"><span class="sub grow" id="gedState" style="font-size:12.5px"></span><button class="ghost" id="gedShow" type="button">Anzeigen</button></div>
+        <div id="gedList"></div>
       </div>
       <div class="card info">
         <h3>Wo liegen meine Tagebuch-Daten?</h3>
@@ -334,9 +350,8 @@ const ls = {
   del(k) { try { localStorage.removeItem(k); } catch (e) {} },
 };
 const K_KEY = "tb_key_v1", K_CACHE = "tb_cache_v1", K_QUEUE = "tb_queue_v1", K_DRAFT = "tb_draft_v1";
-let KEY = null, CFG = null, ENTRIES = new Map(), ANSWERS = new Map(), EDIT = null, NOTE = null, ABOUT = null;
+let KEY = null, CFG = null, ENTRIES = new Map(), ANSWERS = new Map(), EDIT = null, NOTE = null, ABOUT = null, PLAN = null, STATUS = null, AUS = null, GED_REF = null;
 const REPLY_DRAFT = new Map();   // angefangene Antworten pro Verlauf (nur im Speicher)
-const KRISE = /suizid|umbring|nicht mehr leben|nicht mehr da sein|nicht mehr aufwachen|selbstverletz|ritzen|sterben will|will sterben|keinen sinn mehr|alles beenden|mich töten|mich toeten|das leben nehmen|wozu das alles noch/i;
 const newId = () => b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[+/=]/g, c => ({ "+": "x", "/": "y", "=": "" }[c]));
 
 // ============================================================ Krypto (kompatibel mit tagebuch.py)
@@ -370,7 +385,7 @@ async function listRemote() {
   const r = await gh("GET", `/git/trees/${CFG.branch}?recursive=1`);
   if (r.status === 404 || r.status === 409) return [];
   if (!r.ok) throw new Error("GitHub antwortet nicht (" + r.status + ")");
-  return (await r.json()).tree.filter(x => x.type === "blob" && /^(eintraege|antworten|begleiter)\//.test(x.path) && x.path.endsWith(".json") && x.path !== "begleiter/gedaechtnis.json");
+  return (await r.json()).tree.filter(x => x.type === "blob" && /^(eintraege|antworten|begleiter)\//.test(x.path) && x.path.endsWith(".json"));
 }
 async function blob(sha) {
   const r = await gh("GET", `/git/blobs/${sha}`);
@@ -442,13 +457,15 @@ async function loadEntries() {
   setStatus("lädt …");
   const cache = readJSON(K_CACHE, {});
   try {
-    const remote = await listRemote();
+    let remote = await listRemote();
     const keep = {};
+    GED_REF = remote.find(x => x.path === "begleiter/gedaechtnis.json") || null;   // gross, nur bei Bedarf laden
+    remote = remote.filter(x => x !== GED_REF);
     const todo = remote.filter(x => !cache[x.sha]);
     let i = 0;
     const worker = async () => { while (i < todo.length) { const x = todo[i++]; cache[x.sha] = await blob(x.sha); } };
     await Promise.all(Array.from({ length: 6 }, worker));
-    ENTRIES = new Map(); ANSWERS = new Map(); NOTE = null; ABOUT = null;
+    ENTRIES = new Map(); ANSWERS = new Map(); NOTE = null; ABOUT = null; PLAN = null; STATUS = null; AUS = null;
     for (const x of remote) {
       keep[x.sha] = cache[x.sha];
       try {
@@ -456,6 +473,10 @@ async function loadEntries() {
         if (x.path.startsWith("antworten/")) ANSWERS.set(e.id, e);
         else if (x.path === "begleiter/ueber_mich.json") ABOUT = e;
         else if (x.path === "begleiter/notiz.json") NOTE = e;
+        else if (x.path === "begleiter/krisenplan.json") PLAN = e;
+        else if (x.path === "begleiter/status.json") STATUS = e;
+        else if (x.path === "begleiter/ausschluss.json") AUS = e;
+        else if (x.path.startsWith("begleiter/")) continue;
         else ENTRIES.set(e.id, e);
       } catch (err) { /* fremde Datei */ }
     }
@@ -464,7 +485,7 @@ async function loadEntries() {
     setStatus(queueLen() ? `${queueLen()} wartet` : "gespeichert", queueLen() ? "warn" : "");
   } catch (e) {
     // offline: aus dem Cache anzeigen
-    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.gedaechtnis) continue; if (x.ueber_mich) ABOUT = x; else if (x.notiz) NOTE = x; else if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
+    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.gedaechtnis || x.status) continue; if (x.krisenplan) { PLAN = x; continue; } if (x.ausschluss) { AUS = x; continue; } if (x.ueber_mich) ABOUT = x; else if (x.notiz) NOTE = x; else if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
     setStatus(navigator.onLine ? "Fehler" : "offline", navigator.onLine ? "bad" : "warn");
     if (navigator.onLine) toast(e.message);
   }
@@ -580,10 +601,16 @@ $("ssStart").addEventListener("click", async () => {
   try { res = await storeEntry(entry, `eintraege/${id}.json`); } finally { $("ssStart").disabled = false; }
   if (!res) return;
   $("ssTopic").value = ""; SS.mood = SS.tension = null; drawSsScale("mood"); drawSsScale("tension"); setMode("eintrag");
-  if (KRISE.test(text)) toast("Der Begleiter antwortet erst in ein paar Minuten. Wenn es dir jetzt schlecht geht: 143 oder 144.");
   openId = id; go("list");
 });
 const sessionEnded = (root, th) => th.some(x => x.ende);
+function statusText() {
+  if (!STATUS?.ts) return "Der Begleiter antwortet, sobald dein Laptop läuft.";
+  const alt = (Date.now() - new Date(STATUS.ts).getTime()) / 60000;
+  if (STATUS.zustand === "schreibt" && alt < 10) return "Der Begleiter schreibt gerade …";
+  if (alt < 20) return "Dein Laptop läuft, die Antwort kommt in wenigen Minuten.";
+  return `Dein Laptop ist offline (zuletzt ${fmtWhen(STATUS.ts)}). Die Antwort kommt, sobald er läuft.`;
+}
 function waitingAny() {
   const recent = Date.now() - 3 * 3600e3;
   return [...ENTRIES.values()].some(e => e.ai !== false && !ANSWERS.has(e.id) && !hasChild(e) && new Date(e.created || 0).getTime() > recent
@@ -654,15 +681,10 @@ $("saveBtn").addEventListener("click", async () => {
   try { res = await storeEntry(entry, path, EDIT && !EDIT.pending ? EDIT.sha : EDIT?.sha); }
   finally { $("saveBtn").disabled = false; }
   if (!res) return;
-  const krise = KRISE.test(text);
-  if (res === "ok") toast(krise ? "Gespeichert. Der Begleiter antwortet erst später, bitte warte nicht darauf: 143 oder 144."
-    : entry.ai && text.length >= 15 ? "Gespeichert ✓ Der Begleiter antwortet, sobald der Laptop läuft." : "Gespeichert und verschlüsselt ✓");
+  if (res === "ok") toast(entry.ai && text.length >= 15 ? "Gespeichert ✓ Der Begleiter antwortet, sobald der Laptop läuft." : "Gespeichert und verschlüsselt ✓");
   ls.del(K_DRAFT);
-  const low = entry.mood === 1 || (entry.mood === 2 && entry.tension === 5) || krise;
   resetForm();
   renderAll();
-  if (low) { $("helpBox").className = "help soft"; $("helpBox").scrollIntoView({ behavior: "smooth", block: "center" }); }
-  else $("helpBox").className = "help";
 });
 
 // ============================================================ Einträge
@@ -679,7 +701,6 @@ function rootOf(e) { let x = e; const seen = new Set(); while (x.reply_to && ENT
 const threadOf = (root) => [...ENTRIES.values()].filter(e => e.reply_to && e.id !== root.id && rootOf(e).id === root.id).sort((a, b) => (a.created || "").localeCompare(b.created || ""));
 const hasChild = (e) => [...ENTRIES.values()].some(x => x.reply_to === e.id);
 const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }) : "";
-const KRISE_HILFE = `<div class="help soft">Der Begleiter antwortet erst, wenn dein Laptop läuft. Wenn es dir jetzt schwer geht, warte nicht darauf: <b>Die Dargebotene Hand 143</b> (rund um die Uhr, auch Chat auf 143.ch), bei akuter Gefahr <b>144</b>. Ruf jemanden an, dem du vertraust.</div>`;
 function renderList() {
   const q = $("search").value.trim().toLowerCase();
   const hit = (e) => (e.text || "").toLowerCase().includes(q) || (e.tags || []).some(t => t.toLowerCase().includes(q));
@@ -708,7 +729,7 @@ function replyHtml(e) {
   }
   if (child) return "";            // schon weitergeschrieben: der Begleiter antwortet auf beides zusammen
   if (e.ai !== false && (e.art === "sitzung" || e.ende || (e.text || "").trim().length >= (e.reply_to ? 2 : 15)))
-    return KRISE.test(e.text || "") ? KRISE_HILFE : `<div class="reply wait">Der Begleiter schreibt, sobald dein Laptop läuft (meist nach wenigen Minuten). Die Seite lädt seine Antwort von selbst.</div>`;
+    return `<div class="reply wait">${esc(statusText())} Die Seite lädt seine Antwort von selbst.</div>`;
   return "";
 }
 function threadHtml(root, th) {
@@ -741,7 +762,7 @@ async function sendReply(box, ende = false) {
   try { res = await storeEntry(entry, `eintraege/${id}.json`); } finally { btn.disabled = false; }
   if (!res) return;
   REPLY_DRAFT.delete(root.id);
-  if (res === "ok") toast(KRISE.test(text) ? "Gesendet. Bitte warte nicht auf die Antwort: 143 oder 144." : "Gesendet ✓ Der Begleiter antwortet, sobald der Laptop läuft.");
+  if (res === "ok") toast("Gesendet ✓ " + statusText());
   renderList();
 }
 $("search").addEventListener("input", renderList);
@@ -794,6 +815,7 @@ Was ich nicht will:
 `;
 const DIRTY = { about: false, note: false };
 function renderInfo() {
+  renderPlan(); renderGed();
   if (!DIRTY.about) $("aboutText").value = ABOUT?.text || "";
   $("aboutState").textContent = DIRTY.about ? "nicht gespeichert" : ABOUT?.updated ? `gespeichert ${fmtWhen(ABOUT.updated)}` : "";
   $("aboutTpl").hidden = !!$("aboutText").value.trim();
@@ -825,6 +847,63 @@ $("noteDel").addEventListener("click", async () => {
   if (!NOTE || !confirm("Fallverständnis löschen? Der Begleiter beginnt dann ohne Vorwissen (dein „Über mich“ bleibt). Auf dem Laptop bleibt eine verschlüsselte Kopie in _geloescht.")) return;
   try { await delFile(NOTE.path, NOTE.sha); NOTE = null; DIRTY.note = false; toast("Gelöscht"); renderInfo(); }
   catch (e) { toast(e instanceof TypeError ? "Dafür braucht es Internet." : e.message); }
+});
+
+// ---------- Plan für schwere Momente
+const PLAN_FRAGEN = `Woran ich merke, dass es mir schlechter geht (Gedanken, Gefühle, Verhalten):
+
+Was ich selbst tun kann, um mich zu beruhigen oder abzulenken:
+
+Menschen und Orte, die mir guttun:
+
+Wen ich anrufen oder um Hilfe bitten kann (Name, Nummer):
+
+Fachpersonen, die ich erreichen kann (Hausarzt, Therapeutin …):
+
+Wie ich meine Umgebung sicherer mache:
+
+Wofür es sich für mich lohnt:
+`;
+let PLAN_DIRTY = false;
+function renderPlan() {
+  if (!PLAN_DIRTY) $("planText").value = PLAN?.text || "";
+  $("planState").textContent = PLAN_DIRTY ? "nicht gespeichert" : PLAN?.updated ? `gespeichert ${fmtWhen(PLAN.updated)}` : "";
+  $("planTpl").hidden = !!$("planText").value.trim();
+}
+$("planText").addEventListener("input", () => { PLAN_DIRTY = true; $("planState").textContent = "nicht gespeichert"; });
+$("planTpl").addEventListener("click", () => { const ta = $("planText"); ta.value = PLAN_FRAGEN; PLAN_DIRTY = true; $("planTpl").hidden = true; ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.indexOf("\n") + 1; });
+$("planSave").addEventListener("click", async () => {
+  const r = await saveAkte("begleiter/krisenplan.json", { v: 1, id: "krisenplan", krisenplan: true, text: $("planText").value.trim(), updated: new Date().toISOString() }, PLAN, $("planSave"));
+  if (r) { PLAN = r; PLAN_DIRTY = false; toast("Gespeichert ✓"); renderPlan(); }
+});
+
+// ---------- Gedächtnis anzeigen, Einträge ausschliessen
+let GED = null;
+const ausSet = () => new Set(AUS?.ids || []);
+function renderGed() {
+  const aus = ausSet();
+  $("gedState").textContent = GED ? `${Object.keys(GED.items || {}).length} Einträge erschlossen, ${(GED.sitzungen || []).length} Sitzungsabschlüsse${aus.size ? `, ${aus.size} ausgeschlossen` : ""}`
+    : GED_REF ? (aus.size ? `${aus.size} Einträge ausgeschlossen` : "") : "Noch leer. Füllt sich, sobald der Laptop läuft.";
+  $("gedShow").hidden = !GED_REF || !!GED;
+  if (!GED) { $("gedList").innerHTML = ""; return; }
+  const rows = Object.entries(GED.items || {}).map(([id, i]) => ({ id, d: i.d || "", kurz: i.kurz || "", extra: [...(i.themen || []), ...(i.gefuehle || [])].join(", ") }));
+  for (const id of aus) if (!GED.items?.[id]) { const e = ENTRIES.get(id); rows.push({ id, d: e?.d || "", kurz: (e?.text || "(gelöscht)").replace(/\s+/g, " ").slice(0, 120), extra: "" }); }
+  rows.sort((a, b) => b.d.localeCompare(a.d));
+  $("gedList").innerHTML = rows.map(r => `<div class="ged${aus.has(r.id) ? " aus" : ""}"><div><b>${esc(r.d ? parseD(r.d).toLocaleDateString("de-CH") : "")}</b><p>${esc(r.kurz)}</p>${r.extra ? `<small>${esc(r.extra)}</small>` : ""}</div><button class="link" type="button" data-ged="${esc(r.id)}">${aus.has(r.id) ? "wieder aufnehmen" : "ausschliessen"}</button></div>`).join("");
+}
+$("gedShow").addEventListener("click", async () => {
+  if (!GED_REF) return;
+  $("gedShow").disabled = true;
+  try { GED = await dec(await blob(GED_REF.sha)); renderGed(); }
+  catch (e) { toast(e instanceof TypeError ? "Dafür braucht es Internet." : e.message); }
+  finally { $("gedShow").disabled = false; }
+});
+$("gedList").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("[data-ged]"); if (!b) return;
+  const aus = ausSet(), id = b.dataset.ged;
+  aus.has(id) ? aus.delete(id) : aus.add(id);
+  const r = await saveAkte("begleiter/ausschluss.json", { v: 1, id: "ausschluss", ausschluss: true, ids: [...aus], updated: new Date().toISOString() }, AUS, b);
+  if (r) { AUS = r; toast(aus.has(id) ? "Ausgeschlossen ✓ Er verwendet diesen Eintrag nicht mehr." : "Wieder aufgenommen ✓"); renderGed(); }
 });
 
 // ============================================================ Verlauf
