@@ -133,6 +133,11 @@ input[type=date], input[type=time] { padding: 6px 8px; border-radius: 10px; bord
 .rh span { font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 6px; }
 .me { margin-top: 10px; margin-left: 22px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); color: var(--ink); font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .thread .help { margin-top: 10px; }
+.modebar { display: flex; justify-content: center; margin: 2px 0 12px; }
+.modebar .seg button { padding: 7px 18px; font-size: 14.5px; }
+.sitzung-hinweis { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 13.5px; color: var(--ink-2); }
+.replybox .row .ghost { padding: 9px 12px; }
+.sessionend { margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center; }
 .replybox { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .replybox textarea { min-height: 84px; font-size: 15.5px; }
 .replybox .row { align-items: center; }
@@ -191,7 +196,21 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
 
     <!-- Schreiben -->
     <section data-tab="write">
-      <div class="card">
+      <div class="modebar"><div class="seg" id="modeSeg"><button type="button" data-mode="eintrag" aria-pressed="true">Eintrag</button><button type="button" data-mode="sitzung" aria-pressed="false">Sitzung</button></div></div>
+      <div class="card" id="sitzungCard" hidden>
+        <h2>Kleine Sitzung</h2><div class="sub">Etwa 10 Minuten, wenn du gerade Zeit hast. Der Begleiter führt wie in einer Therapiestunde: kurzer Check-in, ein Thema, ein Schritt nach dem anderen, zum Schluss eine kleine Übung.</div>
+        <div class="q">Stimmung <span id="lSsMood"></span></div>
+        <div class="scale" id="ssMood"></div>
+        <div class="ends"><span>sehr schlecht</span><span>sehr gut</span></div>
+        <div class="q">Anspannung <span id="lSsTension"></span></div>
+        <div class="scale" id="ssTension"></div>
+        <div class="ends"><span>entspannt</span><span>sehr angespannt</span></div>
+        <div class="q">Worum soll es gehen? <span>freiwillig</span></div>
+        <textarea id="ssTopic" style="min-height:84px" placeholder="Zum Beispiel: der Druck bei der Arbeit. Leer lassen, wenn du schauen willst, was kommt."></textarea>
+        <div class="sitzung-hinweis">Antworten kommen meist nach ein bis drei Minuten, solange dein Laptop läuft. Er kennt deine Akte und dein ganzes Tagebuch. Es bleibt ein Werkzeug, keine Therapie.</div>
+        <div class="savebar"><button class="primary" id="ssStart" type="button">Sitzung starten</button></div>
+      </div>
+      <div class="card" id="eintragCard">
         <h2 id="formTitle">Wie geht es dir?</h2><div class="sub" id="formSub">Kurzer Check-in, der Text ist freiwillig.</div>
         <div class="row" style="margin-top:10px"><input type="date" id="fDate" aria-label="Datum"><input type="time" id="fTime" aria-label="Uhrzeit"></div>
 
@@ -214,7 +233,7 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
         <div class="q">Gedanken <span>freiwillig</span></div>
         <div class="prompts" id="prompts"></div>
         <textarea id="fText" placeholder="Was beschäftigt dich? Was war gut, was schwer?"></textarea>
-        <label class="aiopt"><input type="checkbox" id="fAi" checked><span>Antwort vom Begleiter<small>Läuft nur auf deinem Laptop (lokale KI). Die Antwort steht meist innert 15 Minuten unter „Einträge“, solange der Laptop an ist. Dort kannst du zurückschreiben.</small></span></label>
+        <label class="aiopt"><input type="checkbox" id="fAi" checked><span>Antwort vom Begleiter<small>Läuft nur auf deinem Laptop (lokale KI). Die Antwort steht meist nach wenigen Minuten unter „Einträge“, solange der Laptop an ist. Dort kannst du zurückschreiben.</small></span></label>
 
         <div class="savebar">
           <button class="ghost" id="cancelEdit" hidden>Abbrechen</button>
@@ -251,7 +270,7 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
           <dt>Was er ist</dt>
           <dd>Ein Gesprächsbegleiter nach kognitiver Verhaltenstherapie (KVT), ergänzt durch Achtsamkeit und Akzeptanz. Er spiegelt, stellt eine Frage pro Brief, schlägt höchstens eine kleine Übung vor und hilft, Gedanken zu prüfen, statt dir einfach recht zu geben. Er ist kein Therapeut, stellt keine Diagnosen und ersetzt keine Behandlung.</dd>
           <dt>So läuft der Briefwechsel</dt>
-          <dd>Du schreibst einen Eintrag, der Begleiter antwortet. Unter seiner Antwort kannst du zurückschreiben, er sieht dann den ganzen Verlauf. Jeder neue Eintrag beginnt einen neuen Verlauf. Die Antworten kommen verzögert, nie sofort. In einer Krise darum nicht auf ihn warten: <b>143</b> (Die Dargebotene Hand, auch Chat auf 143.ch), im Notfall <b>144</b>.</dd>
+          <dd>Du schreibst einen Eintrag, der Begleiter antwortet. Unter seiner Antwort kannst du zurückschreiben, er sieht dann den ganzen Verlauf. Wenn du Zeit hast, startest du beim Schreiben eine <b>Sitzung</b>: etwa 10 Minuten, aufgebaut wie eine kleine Therapiestunde, mit einer Übung zum Schluss. Vor jeder Antwort überlegt er sich zuerst, was los ist und was hilft, und schaut in deine früheren Einträge. Die Antworten kommen verzögert, nie sofort. In einer Krise darum nicht auf ihn warten: <b>143</b> (Die Dargebotene Hand, auch Chat auf 143.ch), im Notfall <b>144</b>.</dd>
           <dt>Grenzen</dt>
           <dd>Ein kleines Modell auf dem Laptop: Es kann sich irren, Dinge missverstehen oder sich wiederholen. Halten Beschwerden länger an, ist eine Fachperson der richtige Ort, zum Beispiel über die Hausärztin oder den Hausarzt.</dd>
         </dl>
@@ -276,7 +295,7 @@ nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
           <dt>Sicherheitskopie</dt>
           <dd>Auf deinem Laptop, bei jedem Abgleich (alle 15 Min., solange er läuft): <code>C:\Users\remyn\AppData\Local\Automatisierung\speediance2garmin\tagebuch_kopie\</code>. Ebenfalls verschlüsselt. Gelöschte Einträge landen dort in <code>_geloescht\</code>. Dieselbe verschlüsselte Kopie liegt zusätzlich im Drive unter <code>96_daten_exporte\Tagebuch Sicherung (verschluesselt)\</code> und kommt so mit auf kDrive und die SSD. Dort liegt auch <code>Tagebuch_lesen.html</code>: liest die Sicherung offline, ohne GitHub.</dd>
           <dt>Begleiter</dt>
-          <dd>Schreibt das Modell <code>Gemma 3 12B</code> in LM Studio, auf deinem Laptop (solange es fehlt: <code>qwen3-8b</code>). Dein Text geht an keinen Cloud-Dienst. Der Laptop schaut alle 15 Minuten nach neuen Briefen (Aufgabe „Tagebuch-Begleiter“). Ausschalten pro Eintrag mit dem Häkchen beim Schreiben.</dd>
+          <dd>Schreibt das Modell <code>Gemma 3 12B</code> in LM Studio, auf deinem Laptop (solange es fehlt: <code>qwen3-8b</code>). Dein Text geht an keinen Cloud-Dienst. Solange der Laptop läuft, schaut er etwa jede Minute nach neuen Briefen (Aufgabe „Tagebuch-Begleiter“). Er kennt deine Akte und erschliesst dein ganzes Tagebuch für sein Gedächtnis, auch die alten Einträge. Ausschalten pro Eintrag mit dem Häkchen beim Schreiben.</dd>
           <dt>Im Dashboard</dt>
           <dd>Nur die Zahlen: Stimmung, Energie und Anspannung pro Tag. Nie dein Text, nie deine Stichworte.</dd>
           <dt>Auf diesem Gerät</dt>
@@ -351,7 +370,7 @@ async function listRemote() {
   const r = await gh("GET", `/git/trees/${CFG.branch}?recursive=1`);
   if (r.status === 404 || r.status === 409) return [];
   if (!r.ok) throw new Error("GitHub antwortet nicht (" + r.status + ")");
-  return (await r.json()).tree.filter(x => x.type === "blob" && /^(eintraege|antworten|begleiter)\//.test(x.path) && x.path.endsWith(".json"));
+  return (await r.json()).tree.filter(x => x.type === "blob" && /^(eintraege|antworten|begleiter)\//.test(x.path) && x.path.endsWith(".json") && x.path !== "begleiter/gedaechtnis.json");
 }
 async function blob(sha) {
   const r = await gh("GET", `/git/blobs/${sha}`);
@@ -445,7 +464,7 @@ async function loadEntries() {
     setStatus(queueLen() ? `${queueLen()} wartet` : "gespeichert", queueLen() ? "warn" : "");
   } catch (e) {
     // offline: aus dem Cache anzeigen
-    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.ueber_mich) ABOUT = x; else if (x.notiz) NOTE = x; else if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
+    for (const o of Object.values(cache)) { try { const x = await dec(o); if (x.gedaechtnis) continue; if (x.ueber_mich) ABOUT = x; else if (x.notiz) NOTE = x; else if (x.for) ANSWERS.set(x.id, x); else if (!ENTRIES.has(x.id)) ENTRIES.set(x.id, x); } catch (err) {} }
     setStatus(navigator.onLine ? "Fehler" : "offline", navigator.onLine ? "bad" : "warn");
     if (navigator.onLine) toast(e.message);
   }
@@ -537,6 +556,47 @@ function initForm() {
   resetForm();
   restoreDraft();
 }
+// ============================================================ Sitzung
+const SS = { mood: null, tension: null };
+function drawSsScale(k) {
+  const id = "ss" + k[0].toUpperCase() + k.slice(1), box = $(id);
+  box.innerHTML = [1, 2, 3, 4, 5].map(v => `<button type="button" data-v="${v}" style="--sc:${scaleColor(k, v)}" aria-pressed="${SS[k] === v}" aria-label="${SCALES[k][v - 1]}">${v}</button>`).join("");
+  $("lSs" + k[0].toUpperCase() + k.slice(1)).textContent = SS[k] ? SCALES[k][SS[k] - 1] : "";
+  box.onclick = (ev) => { const b = ev.target.closest("button"); if (!b) return; const v = +b.dataset.v; SS[k] = SS[k] === v ? null : v; drawSsScale(k); };
+}
+drawSsScale("mood"); drawSsScale("tension");
+function setMode(m) {
+  for (const b of $("modeSeg").children) b.setAttribute("aria-pressed", String(b.dataset.mode === m));
+  $("sitzungCard").hidden = m !== "sitzung"; $("eintragCard").hidden = m === "sitzung";
+}
+$("modeSeg").addEventListener("click", (ev) => { const b = ev.target.closest("button"); if (b) setMode(b.dataset.mode); });
+$("ssStart").addEventListener("click", async () => {
+  const now = new Date(), nowIso = now.toISOString(), id = newId();
+  const text = $("ssTopic").value.trim();
+  const entry = { v: 1, id, art: "sitzung", d: isoLocal(now), t: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
+    mood: SS.mood, energy: null, tension: SS.tension, tags: [], text, ai: true, created: nowIso, updated: nowIso };
+  $("ssStart").disabled = true;
+  let res;
+  try { res = await storeEntry(entry, `eintraege/${id}.json`); } finally { $("ssStart").disabled = false; }
+  if (!res) return;
+  $("ssTopic").value = ""; SS.mood = SS.tension = null; drawSsScale("mood"); drawSsScale("tension"); setMode("eintrag");
+  if (KRISE.test(text)) toast("Der Begleiter antwortet erst in ein paar Minuten. Wenn es dir jetzt schlecht geht: 143 oder 144.");
+  openId = id; go("list");
+});
+const sessionEnded = (root, th) => th.some(x => x.ende);
+function waitingAny() {
+  const recent = Date.now() - 3 * 3600e3;
+  return [...ENTRIES.values()].some(e => e.ai !== false && !ANSWERS.has(e.id) && !hasChild(e) && new Date(e.created || 0).getTime() > recent
+    && (e.art === "sitzung" || e.ende || (e.text || "").trim().length >= (e.reply_to ? 2 : 15)));
+}
+// Während auf eine Antwort gewartet wird: alle 30 Sek. nachladen (nicht während du tippst)
+setInterval(async () => {
+  if (!KEY || document.visibilityState !== "visible" || TAB !== "list" || !waitingAny()) return;
+  if (document.activeElement?.classList?.contains("rtext") && document.activeElement.value.trim()) return;
+  try { await loadEntries(); } catch (e) {}
+}, 30000);
+document.addEventListener("visibilitychange", () => { if (KEY && document.visibilityState === "visible" && waitingAny()) loadEntries().catch(() => {}); });
+
 // Entwurf (verschlüsselt) im Browser, falls die Seite zugeht
 let draftT;
 function saveDraft() {
@@ -587,6 +647,7 @@ $("saveBtn").addEventListener("click", async () => {
   const entry = { v: 1, id, d: $("fDate").value, t: $("fTime").value, mood: FORM.mood, energy: FORM.energy, tension: FORM.tension,
     tags: [...FORM.tags], text, ai: $("fAi").checked, created: EDIT ? EDIT.created : nowIso, updated: nowIso };
   if (EDIT && EDIT.reply_to) entry.reply_to = EDIT.reply_to;
+  for (const k of ["art", "ende", "quelle"]) if (EDIT && EDIT[k] !== undefined) entry[k] = EDIT[k];
   const path = EDIT ? EDIT.path || `eintraege/${id}.json` : `eintraege/${id}.json`;
   $("saveBtn").disabled = true;
   let res;
@@ -629,11 +690,11 @@ function renderList() {
     const m = e.d.slice(0, 7);
     if (m !== lastM) { html += `<div class="month">${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}</div>`; lastM = m; }
     const d = parseD(e.d), open = openId === e.id, th = threadOf(e);
-    const badge = th.length ? `Briefwechsel (${th.length + 1})` : ANSWERS.has(e.id) ? "Begleiter" : "";
+    const badge = e.art === "sitzung" ? (sessionEnded(e, th) ? "Sitzung" : "Sitzung läuft") : th.length ? `Briefwechsel (${th.length + 1})` : ANSWERS.has(e.id) ? "Begleiter" : e.quelle ? e.quelle : "";
     html += `<div class="entry" data-id="${esc(e.id)}"><div class="top"><div class="date">${WD[d.getDay()]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}<span>${esc(e.t || "")}${e.pending ? ", wartet auf Internet" : ""}</span></div>
       <div class="dots">${dotHtml("mood", e.mood, "Stimmung")}${dotHtml("energy", e.energy, "Energie")}${dotHtml("tension", e.tension, "Anspannung")}</div></div>
       ${e.text ? `<div class="txt ${open ? "" : "clip"}">${esc(e.text)}</div>` : ""}
-      ${(e.tags || []).length || (badge && !open) ? `<div class="tags">${(e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("")}${!open && badge ? `<span class="rtag">${badge}</span>` : ""}</div>` : ""}
+      ${(e.tags || []).length || (badge && (!open || e.art === "sitzung")) ? `<div class="tags">${(e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("")}${badge && (!open || e.art === "sitzung") ? `<span class="rtag">${esc(badge)}</span>` : ""}</div>` : ""}
       ${open ? threadHtml(e, th) : ""}
       ${open ? `<div class="acts"><button class="link" data-act="edit">Bearbeiten</button><button class="link" data-act="del" style="color:var(--critical)">Löschen</button></div>` : ""}</div>`;
   }
@@ -646,30 +707,36 @@ function replyHtml(e) {
     return `<div class="reply"><div class="rh">Begleiter<span>${fmtWhen(a.created)}${stale ? ", zu einer früheren Fassung, neue folgt" : ""}</span></div>${esc(a.text)}</div>`;
   }
   if (child) return "";            // schon weitergeschrieben: der Begleiter antwortet auf beides zusammen
-  if (e.ai !== false && (e.text || "").trim().length >= (e.reply_to ? 2 : 15))
-    return KRISE.test(e.text || "") ? KRISE_HILFE : `<div class="reply wait">Der Begleiter antwortet, sobald dein Laptop läuft (meist innert 15 Minuten).</div>`;
+  if (e.ai !== false && (e.art === "sitzung" || e.ende || (e.text || "").trim().length >= (e.reply_to ? 2 : 15)))
+    return KRISE.test(e.text || "") ? KRISE_HILFE : `<div class="reply wait">Der Begleiter schreibt, sobald dein Laptop läuft (meist nach wenigen Minuten). Die Seite lädt seine Antwort von selbst.</div>`;
   return "";
 }
 function threadHtml(root, th) {
   let h = replyHtml(root);
   for (const r of th) h += `<div class="me"><div class="rh">Du<span>${fmtWhen(r.created)}${r.pending ? ", wartet auf Internet" : ""}</span></div>${esc(r.text)}</div>` + replyHtml(r);
   const last = th.length ? th[th.length - 1] : root;
-  if (root.ai !== false && (root.text || "").trim().length >= 15) {
+  const sitzung = root.art === "sitzung";
+  if (sitzung && sessionEnded(root, th)) {
+    h += `<div class="sessionend">Sitzung abgeschlossen. Die vereinbarte Übung steht in seinem Abschluss und in der Akte.</div>`;
+  } else if (root.ai !== false && (sitzung || (root.text || "").trim().length >= 15)) {
     const answered = ANSWERS.has(last.id);
+    const ph = answered ? (sitzung ? "Antworten …  (Beim Beenden gern: Was war heute hilfreich, was nicht?)" : "Dem Begleiter antworten …") : "Noch etwas ergänzen …";
     h += `<div class="replybox" data-root="${esc(root.id)}" data-last="${esc(last.id)}">
-      <textarea class="rtext" aria-label="Antwort an den Begleiter" placeholder="${answered ? "Dem Begleiter antworten …" : "Noch etwas ergänzen …"}">${esc(REPLY_DRAFT.get(root.id) || "")}</textarea>
-      <div class="row"><span class="sub grow" style="font-size:12.5px">Verschlüsselt. Antwort meist innert 15 Min., solange der Laptop läuft.</span><button class="primary" data-act="reply">Senden</button></div></div>`;
+      <textarea class="rtext" aria-label="Antwort an den Begleiter" placeholder="${ph}">${esc(REPLY_DRAFT.get(root.id) || "")}</textarea>
+      <div class="row"><span class="sub grow" style="font-size:12.5px">Verschlüsselt. Antwort meist nach wenigen Minuten, solange der Laptop läuft.</span>${sitzung ? `<button class="ghost" data-act="endsession">Sitzung beenden</button>` : ""}<button class="primary" data-act="reply">Senden</button></div></div>`;
   }
   return `<div class="thread">${h}</div>`;
 }
-async function sendReply(box) {
+async function sendReply(box, ende = false) {
   const root = ENTRIES.get(box.dataset.root), last = ENTRIES.get(box.dataset.last) || root;
-  const text = box.querySelector("textarea").value.trim();
+  let text = box.querySelector("textarea").value.trim();
+  if (ende && !text) text = "Ich möchte die Sitzung hier beenden.";
   if (!text) { toast("Bitte zuerst etwas schreiben."); return; }
   const now = new Date(), nowIso = now.toISOString(), id = newId();
   const entry = { v: 1, id, reply_to: last.id, d: isoLocal(now), t: `${pad2(now.getHours())}:${pad2(now.getMinutes())}`,
     mood: null, energy: null, tension: null, tags: [], text, ai: true, created: nowIso, updated: nowIso };
-  const btn = box.querySelector("[data-act=reply]"); btn.disabled = true;
+  if (ende) entry.ende = true;
+  const btn = box.querySelector(ende ? "[data-act=endsession]" : "[data-act=reply]"); btn.disabled = true;
   let res;
   try { res = await storeEntry(entry, `eintraege/${id}.json`); } finally { btn.disabled = false; }
   if (!res) return;
@@ -686,8 +753,9 @@ $("entries").addEventListener("click", async (ev) => {
   const e = ENTRIES.get(card.dataset.id);
   const act = ev.target.closest("[data-act]")?.dataset.act;
   if (act === "reply") { await sendReply(ev.target.closest(".replybox")); return; }
+  if (act === "endsession") { await sendReply(ev.target.closest(".replybox"), true); return; }
   if (ev.target.closest(".replybox, .reply, .me")) return;    // in den Briefwechsel tippen klappt die Karte nicht zu
-  if (act === "edit") { resetForm(e); go("write"); return; }
+  if (act === "edit") { resetForm(e); setMode("eintrag"); go("write"); return; }
   if (act === "del") {
     const th = threadOf(e);
     if (!confirm(th.length ? `Diesen Eintrag mit dem ganzen Briefwechsel (${th.length + 1} Briefe) löschen? Auf dem Laptop bleibt eine verschlüsselte Kopie im Ordner _geloescht.`
